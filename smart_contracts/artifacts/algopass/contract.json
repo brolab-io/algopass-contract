@@ -1,46 +1,46 @@
 {
-    "name": "algopass",
-    "methods": [
+  "name": "algopass",
+  "methods": [
+    {
+      "name": "init_profile",
+      "args": [
         {
-            "name": "init_profile",
-            "args": [
-                {
-                    "type": "pay",
-                    "name": "payment"
-                }
-            ],
-            "returns": {
-                "type": "bool"
-            }
-        },
-        {
-            "name": "update_profile",
-            "args": [
-                {
-                    "type": "string",
-                    "name": "name"
-                },
-                {
-                    "type": "string",
-                    "name": "bio"
-                }
-            ],
-            "returns": {
-                "type": "(string,string)"
-            }
-        },
-        {
-            "name": "hello",
-            "args": [
-                {
-                    "type": "string",
-                    "name": "name"
-                }
-            ],
-            "returns": {
-                "type": "string"
-            }
+          "type": "pay",
+          "name": "payment"
         }
-    ],
-    "networks": {}
+      ],
+      "returns": {
+        "type": "bool"
+      }
+    },
+    {
+      "name": "update_profile",
+      "args": [
+        {
+          "type": "string",
+          "name": "name"
+        },
+        {
+          "type": "string",
+          "name": "bio"
+        }
+      ],
+      "returns": {
+        "type": "(string,string)"
+      }
+    },
+    {
+      "name": "hello",
+      "args": [
+        {
+          "type": "string",
+          "name": "name"
+        }
+      ],
+      "returns": {
+        "type": "string"
+      }
+    }
+  ],
+  "networks": {}
 }

@@ -34,7 +34,6 @@ export async function deploy() {
     onUpdate: isMainNet ? 'append' : 'update',
   })
 
-
   // If app was just created fund the app account
   if (['create', 'replace'].includes(app.operationPerformed)) {
     algokit.transferAlgos(
