@@ -23,10 +23,26 @@
                 {
                     "type": "string",
                     "name": "bio"
+                },
+                {
+                    "type": "string",
+                    "name": "uri"
                 }
             ],
             "returns": {
-                "type": "(string,string)"
+                "type": "(string,string,string)"
+            }
+        },
+        {
+            "name": "update_fee",
+            "args": [
+                {
+                    "type": "uint64",
+                    "name": "fee"
+                }
+            ],
+            "returns": {
+                "type": "void"
             }
         },
         {

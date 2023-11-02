@@ -1,35 +1,27 @@
 #pragma version 8
-intcblock 0 1 4 65536
-bytecblock 0x 0x675f636f756e746572 0x151f7c75 0x675f666565
+intcblock 0 1 65536 6
+bytecblock 0x 0x675f636f756e746572 0x675f666565 0x151f7c75
 txn NumAppArgs
 intc_0 // 0
 ==
-bnz main_l8
+bnz main_l10
 txna ApplicationArgs 0
 pushbytes 0x3c6f1049 // "init_profile(pay)bool"
 ==
-bnz main_l7
+bnz main_l9
 txna ApplicationArgs 0
-pushbytes 0xb8113071 // "update_profile(string,string)(string,string)"
+pushbytes 0xca2d921d // "update_profile(string,string,string)(string,string,string)"
 ==
-bnz main_l6
+bnz main_l8
+txna ApplicationArgs 0
+pushbytes 0x571bf70a // "update_fee(uint64)void"
+==
+bnz main_l7
 txna ApplicationArgs 0
 pushbytes 0x02bece11 // "hello(string)string"
 ==
-bnz main_l5
+bnz main_l6
 err
-main_l5:
-txn OnCompletion
-intc_0 // NoOp
-==
-txn ApplicationID
-intc_0 // 0
-!=
-&&
-assert
-callsub hellocaster_8
-intc_1 // 1
-return
 main_l6:
 txn OnCompletion
 intc_0 // NoOp
@@ -39,7 +31,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updateprofilecaster_7
+callsub hellocaster_10
 intc_1 // 1
 return
 main_l7:
@@ -51,40 +43,64 @@ intc_0 // 0
 !=
 &&
 assert
-callsub initprofilecaster_6
+callsub updatefeecaster_9
 intc_1 // 1
 return
 main_l8:
 txn OnCompletion
 intc_0 // NoOp
 ==
-bnz main_l14
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub updateprofilecaster_8
+intc_1 // 1
+return
+main_l9:
 txn OnCompletion
-intc_2 // UpdateApplication
+intc_0 // NoOp
 ==
-bnz main_l13
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub initprofilecaster_7
+intc_1 // 1
+return
+main_l10:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l16
+txn OnCompletion
+pushint 4 // UpdateApplication
+==
+bnz main_l15
 txn OnCompletion
 pushint 5 // DeleteApplication
 ==
-bnz main_l12
+bnz main_l14
 err
-main_l12:
-txn ApplicationID
-intc_0 // 0
-!=
-assert
-callsub delete_4
-intc_1 // 1
-return
-main_l13:
-txn ApplicationID
-intc_0 // 0
-!=
-assert
-callsub update_3
-intc_1 // 1
-return
 main_l14:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub delete_5
+intc_1 // 1
+return
+main_l15:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub update_4
+intc_1 // 1
+return
+main_l16:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -99,7 +115,7 @@ proto 0 0
 bytec_1 // "g_counter"
 intc_0 // 0
 app_global_put
-bytec_3 // "g_fee"
+bytec_2 // "g_fee"
 pushint 1000000 // 1000000
 app_global_put
 retsub
@@ -109,7 +125,7 @@ initprofile_1:
 proto 1 1
 intc_0 // 0
 bytec_0 // ""
-dupn 2
+dupn 3
 intc_0 // 0
 dup
 bytec_0 // ""
@@ -134,7 +150,7 @@ global CurrentApplicationAddress
 assert
 frame_dig -1
 gtxns Amount
-bytec_3 // "g_fee"
+bytec_2 // "g_fee"
 app_global_get
 ==
 // payment must be for >= (app_global_get (utf8 bytes: "g_fee"))
@@ -163,44 +179,74 @@ extract 6 0
 frame_dig 2
 concat
 frame_bury 2
-frame_dig 1
-frame_bury 7
-frame_dig 7
-frame_bury 6
-intc_2 // 4
-frame_bury 4
-frame_dig 4
-frame_dig 7
+pushbytes 0x697066733a2f2f // "ipfs://"
+frame_bury 3
+frame_dig 3
 len
-+
+itob
+extract 6 0
+frame_dig 3
+concat
+frame_bury 3
+frame_dig 1
+frame_bury 8
+frame_dig 8
+frame_bury 7
+intc_3 // 6
 frame_bury 5
 frame_dig 5
-intc_3 // 65536
+frame_dig 8
+len
++
+frame_bury 6
+frame_dig 6
+intc_2 // 65536
 <
 assert
-frame_dig 4
+frame_dig 5
 itob
 extract 6 0
 frame_dig 2
+frame_bury 8
+frame_dig 7
+frame_dig 8
+concat
 frame_bury 7
 frame_dig 6
-frame_dig 7
-concat
-frame_bury 6
+frame_bury 5
 frame_dig 5
-frame_bury 4
-frame_dig 4
+frame_dig 8
+len
++
+frame_bury 6
+frame_dig 6
+intc_2 // 65536
+<
+assert
+frame_dig 5
 itob
 extract 6 0
 concat
-frame_dig 6
+frame_dig 3
+frame_bury 8
+frame_dig 7
+frame_dig 8
 concat
-frame_bury 3
+frame_bury 7
+frame_dig 6
+frame_bury 5
+frame_dig 5
+itob
+extract 6 0
+concat
+frame_dig 7
+concat
+frame_bury 4
 txn Sender
 box_del
 pop
 txn Sender
-frame_dig 3
+frame_dig 4
 box_put
 intc_1 // 1
 !
@@ -210,7 +256,7 @@ retsub
 
 // update_profile
 updateprofile_2:
-proto 2 1
+proto 3 1
 bytec_0 // ""
 dup
 intc_0 // 0
@@ -224,6 +270,18 @@ store 2
 load 3
 // Not Exist
 assert
+frame_dig -3
+extract 2 0
+len
+pushint 20 // 20
+<=
+assert
+frame_dig -2
+extract 2 0
+len
+pushint 200 // 200
+<=
+assert
 txn Sender
 box_get
 store 5
@@ -232,11 +290,11 @@ load 5
 assert
 load 4
 frame_bury 1
-frame_dig -2
+frame_dig -3
 frame_bury 5
 frame_dig 5
 frame_bury 4
-intc_2 // 4
+intc_3 // 6
 frame_bury 2
 frame_dig 2
 frame_dig 5
@@ -244,12 +302,33 @@ len
 +
 frame_bury 3
 frame_dig 3
-intc_3 // 65536
+intc_2 // 65536
 <
 assert
 frame_dig 2
 itob
 extract 6 0
+frame_dig -2
+frame_bury 5
+frame_dig 4
+frame_dig 5
+concat
+frame_bury 4
+frame_dig 3
+frame_bury 2
+frame_dig 2
+frame_dig 5
+len
++
+frame_bury 3
+frame_dig 3
+intc_2 // 65536
+<
+assert
+frame_dig 2
+itob
+extract 6 0
+concat
 frame_dig -1
 frame_bury 5
 frame_dig 4
@@ -275,8 +354,21 @@ frame_dig 1
 frame_bury 0
 retsub
 
+// update_fee
+updatefee_3:
+proto 1 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+bytec_2 // "g_fee"
+frame_dig -1
+app_global_put
+retsub
+
 // update
-update_3:
+update_4:
 proto 0 0
 txn Sender
 global CreatorAddress
@@ -289,7 +381,7 @@ assert
 retsub
 
 // delete
-delete_4:
+delete_5:
 proto 0 0
 txn Sender
 global CreatorAddress
@@ -302,7 +394,7 @@ assert
 retsub
 
 // hello
-hello_5:
+hello_6:
 proto 1 1
 bytec_0 // ""
 pushbytes 0x48656c6c6f2c20 // "Hello, "
@@ -320,7 +412,7 @@ frame_bury 0
 retsub
 
 // init_profile_caster
-initprofilecaster_6:
+initprofilecaster_7:
 proto 0 0
 intc_0 // 0
 dup
@@ -336,7 +428,7 @@ assert
 frame_dig 1
 callsub initprofile_1
 frame_bury 0
-bytec_2 // 0x151f7c75
+bytec_3 // 0x151f7c75
 pushbytes 0x00 // 0x00
 intc_0 // 0
 frame_dig 0
@@ -346,35 +438,49 @@ log
 retsub
 
 // update_profile_caster
-updateprofilecaster_7:
+updateprofilecaster_8:
 proto 0 0
 bytec_0 // ""
-dupn 2
+dupn 3
 txna ApplicationArgs 1
 frame_bury 1
 txna ApplicationArgs 2
 frame_bury 2
+txna ApplicationArgs 3
+frame_bury 3
 frame_dig 1
 frame_dig 2
+frame_dig 3
 callsub updateprofile_2
 frame_bury 0
-bytec_2 // 0x151f7c75
+bytec_3 // 0x151f7c75
 frame_dig 0
 concat
 log
 retsub
 
+// update_fee_caster
+updatefeecaster_9:
+proto 0 0
+intc_0 // 0
+txna ApplicationArgs 1
+btoi
+frame_bury 0
+frame_dig 0
+callsub updatefee_3
+retsub
+
 // hello_caster
-hellocaster_8:
+hellocaster_10:
 proto 0 0
 bytec_0 // ""
 dup
 txna ApplicationArgs 1
 frame_bury 1
 frame_dig 1
-callsub hello_5
+callsub hello_6
 frame_bury 0
-bytec_2 // 0x151f7c75
+bytec_3 // 0x151f7c75
 frame_dig 0
 concat
 log

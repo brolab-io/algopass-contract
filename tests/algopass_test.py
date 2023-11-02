@@ -79,9 +79,14 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
         transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
         name="Leo Pham",
         bio="Leo Pham is a blockchain developer",
+        uri="ipfs://xx.y/metadata.json",
     )
 
-    assert result.return_value == ["Leo Pham", "Leo Pham is a blockchain developer"]
+    assert result.return_value == [
+        "Leo Pham",
+        "Leo Pham is a blockchain developer",
+        "ipfs://xx.y/metadata.json",
+    ]
 
 
 def test_says_hello(algopass_client: ApplicationClient) -> None:

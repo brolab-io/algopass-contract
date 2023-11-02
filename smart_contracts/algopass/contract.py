@@ -1,12 +1,18 @@
+from typing import Literal
+
 import beaker
 import pyteal as pt
 from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
+from beaker.consts import BOX_BYTE_MIN_BALANCE, BOX_FLAT_MIN_BALANCE
 from beaker.lib.storage import BoxMapping
+
+byte32 = pt.abi.StaticArray[pt.abi.Byte, Literal[32]]
 
 
 class UserRecord(pt.abi.NamedTuple):
     name: pt.abi.Field[pt.abi.String]
     bio: pt.abi.Field[pt.abi.String]
+    uri: pt.abi.Field[pt.abi.String]
 
 
 class AppState:
@@ -31,6 +37,9 @@ app = beaker.Application("algopass", state=state).apply(
     beaker.unconditional_create_approval, initialize_global_state=True
 )
 
+MAX_NAME_LEN = pt.Int(20)
+MAX_BIO_LEN = pt.Int(200)
+
 
 @app.external
 def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> pt.Expr:
@@ -49,7 +58,8 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
         state.g_counter.increment(),
         (name := pt.abi.String()).set(pt.Bytes("name")),
         (bio := pt.abi.String()).set(pt.Bytes("bio")),
-        (temp := UserRecord()).set(name, bio),
+        (uri := pt.abi.String()).set(pt.Bytes("ipfs://")),
+        (temp := UserRecord()).set(name, bio, uri),
         state.b_info[pt.Txn.sender()].set(temp),
         output.set(pt.Int(1)),
     )
@@ -57,16 +67,24 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
 
 @app.external
 def update_profile(
-    name: pt.abi.String, bio: pt.abi.String, *, output: UserRecord
+    name: pt.abi.String, bio: pt.abi.String, uri: pt.abi.String, *, output: UserRecord
 ) -> pt.Expr:
     return pt.Seq(
         pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
+        pt.Assert(pt.Len(name.get()) <= MAX_NAME_LEN),
+        pt.Assert(pt.Len(bio.get()) <= MAX_BIO_LEN),
         (cur_p := UserRecord()).decode(state.b_info[pt.Txn.sender()].get()),
-        # (name := pt.abi.String()).set(pt.Bytes("name")),
-        # (bio := pt.abi.String()).set(pt.Bytes("bio")),
-        cur_p.set(name, bio),
+        cur_p.set(name, bio, uri),
         state.b_info[pt.Txn.sender()].set(cur_p),
         output.decode(cur_p.encode()),
+    )
+
+
+def canculate_fee() -> pt.Int:
+    return pt.Int(
+        BOX_FLAT_MIN_BALANCE
+        + (pt.abi.size_of(pt.abi.Address) * BOX_BYTE_MIN_BALANCE)
+        + (pt.abi.size_of(pt.abi.String) * BOX_BYTE_MIN_BALANCE)
     )
 
 
