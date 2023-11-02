@@ -70,6 +70,11 @@ def update_profile(
     )
 
 
+@app.external(authorize=beaker.Authorize.only_creator())
+def update_fee(fee: pt.abi.Uint64) -> pt.Expr:
+    return state.g_fee.set(fee.get())
+
+
 @app.update(authorize=beaker.Authorize.only_creator(), bare=True)
 def update() -> pt.Expr:
     return pt.Assert(
