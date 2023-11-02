@@ -39,7 +39,7 @@ export async function deploy() {
   if (['create', 'replace'].includes(app.operationPerformed)) {
     algokit.transferAlgos(
       {
-        amount: algokit.algos(1),
+        amount: algokit.algos(0.5),
         from: deployer,
         to: app.appAddress,
       },

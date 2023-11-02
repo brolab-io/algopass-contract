@@ -2,6 +2,34 @@
     "name": "algopass",
     "methods": [
         {
+            "name": "init_profile",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "payment"
+                }
+            ],
+            "returns": {
+                "type": "bool"
+            }
+        },
+        {
+            "name": "update_profile",
+            "args": [
+                {
+                    "type": "string",
+                    "name": "name"
+                },
+                {
+                    "type": "string",
+                    "name": "bio"
+                }
+            ],
+            "returns": {
+                "type": "(string,string)"
+            }
+        },
+        {
             "name": "hello",
             "args": [
                 {

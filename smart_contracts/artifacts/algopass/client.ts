@@ -27,6 +27,31 @@ import type { TransactionWithSigner } from 'algosdk'
 import { Algodv2, OnApplicationComplete, Transaction, AtomicTransactionComposer } from 'algosdk'
 export const APP_SPEC: AppSpec = {
   "hints": {
+    "init_profile(pay)bool": {
+      "call_config": {
+        "no_op": "CALL"
+      }
+    },
+    "update_profile(string,string)(string,string)": {
+      "structs": {
+        "output": {
+          "name": "UserRecord",
+          "elements": [
+            [
+              "name",
+              "string"
+            ],
+            [
+              "bio",
+              "string"
+            ]
+          ]
+        }
+      },
+      "call_config": {
+        "no_op": "CALL"
+      }
+    },
     "hello(string)string": {
       "call_config": {
         "no_op": "CALL"
@@ -34,13 +59,13 @@ export const APP_SPEC: AppSpec = {
     }
   },
   "source": {
-    "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMQpieXRlY2Jsb2NrIDB4CnR4biBOdW1BcHBBcmdzCmludGNfMCAvLyAwCj09CmJueiBtYWluX2w0CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4MDJiZWNlMTEgLy8gImhlbGxvKHN0cmluZylzdHJpbmciCj09CmJueiBtYWluX2wzCmVycgptYWluX2wzOgp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGhlbGxvY2FzdGVyXzMKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDQ6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KYm56IG1haW5fbDEwCnR4biBPbkNvbXBsZXRpb24KcHVzaGludCA0IC8vIFVwZGF0ZUFwcGxpY2F0aW9uCj09CmJueiBtYWluX2w5CnR4biBPbkNvbXBsZXRpb24KcHVzaGludCA1IC8vIERlbGV0ZUFwcGxpY2F0aW9uCj09CmJueiBtYWluX2w4CmVycgptYWluX2w4Ogp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiBkZWxldGVfMQppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sOToKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgdXBkYXRlXzAKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEwOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAo9PQphc3NlcnQKaW50Y18xIC8vIDEKcmV0dXJuCgovLyB1cGRhdGUKdXBkYXRlXzA6CnByb3RvIDAgMAp0eG4gU2VuZGVyCmdsb2JhbCBDcmVhdG9yQWRkcmVzcwo9PQovLyB1bmF1dGhvcml6ZWQKYXNzZXJ0CnB1c2hpbnQgVE1QTF9VUERBVEFCTEUgLy8gVE1QTF9VUERBVEFCTEUKLy8gQ2hlY2sgYXBwIGlzIHVwZGF0YWJsZQphc3NlcnQKcmV0c3ViCgovLyBkZWxldGUKZGVsZXRlXzE6CnByb3RvIDAgMAp0eG4gU2VuZGVyCmdsb2JhbCBDcmVhdG9yQWRkcmVzcwo9PQovLyB1bmF1dGhvcml6ZWQKYXNzZXJ0CnB1c2hpbnQgVE1QTF9ERUxFVEFCTEUgLy8gVE1QTF9ERUxFVEFCTEUKLy8gQ2hlY2sgYXBwIGlzIGRlbGV0YWJsZQphc3NlcnQKcmV0c3ViCgovLyBoZWxsbwpoZWxsb18yOgpwcm90byAxIDEKYnl0ZWNfMCAvLyAiIgpwdXNoYnl0ZXMgMHg0ODY1NmM2YzZmMmMyMCAvLyAiSGVsbG8sICIKZnJhbWVfZGlnIC0xCmV4dHJhY3QgMiAwCmNvbmNhdApmcmFtZV9idXJ5IDAKZnJhbWVfZGlnIDAKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDAKY29uY2F0CmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGhlbGxvX2Nhc3RlcgpoZWxsb2Nhc3Rlcl8zOgpwcm90byAwIDAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKY2FsbHN1YiBoZWxsb18yCmZyYW1lX2J1cnkgMApwdXNoYnl0ZXMgMHgxNTFmN2M3NSAvLyAweDE1MWY3Yzc1CmZyYW1lX2RpZyAwCmNvbmNhdApsb2cKcmV0c3Vi",
+    "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0IDY1NTM2CmJ5dGVjYmxvY2sgMHggMHgxNTFmN2M3NSAweDY3NWY2NjY1NjUKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDgKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgzYzZmMTA0OSAvLyAiaW5pdF9wcm9maWxlKHBheSlib29sIgo9PQpibnogbWFpbl9sNwp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweGI4MTEzMDcxIC8vICJ1cGRhdGVfcHJvZmlsZShzdHJpbmcsc3RyaW5nKShzdHJpbmcsc3RyaW5nKSIKPT0KYm56IG1haW5fbDYKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgwMmJlY2UxMSAvLyAiaGVsbG8oc3RyaW5nKXN0cmluZyIKPT0KYm56IG1haW5fbDUKZXJyCm1haW5fbDU6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaGVsbG9jYXN0ZXJfNgppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sNjoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiB1cGRhdGVwcm9maWxlY2FzdGVyXzUKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDc6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaW5pdHByb2ZpbGVjYXN0ZXJfNAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sODoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQpibnogbWFpbl9sMTAKZXJyCm1haW5fbDEwOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAo9PQphc3NlcnQKY2FsbHN1YiBjcmVhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIGNyZWF0ZQpjcmVhdGVfMDoKcHJvdG8gMCAwCnB1c2hieXRlcyAweDY3NWY2MzZmNzU2ZTc0NjU3MiAvLyAiZ19jb3VudGVyIgppbnRjXzAgLy8gMAphcHBfZ2xvYmFsX3B1dApieXRlY18yIC8vICJnX2ZlZSIKcHVzaGludCAxMDAwMDAwIC8vIDEwMDAwMDAKYXBwX2dsb2JhbF9wdXQKcmV0c3ViCgovLyBpbml0X3Byb2ZpbGUKaW5pdHByb2ZpbGVfMToKcHJvdG8gMSAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKZHVwbiAyCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG4gU2VuZGVyCmJveF9sZW4Kc3RvcmUgMQpzdG9yZSAwCmxvYWQgMQohCi8vIEluaXRpYWxpemVkCmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KLy8gV3JvbmcgcmVjZWl2ZXIKYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKYnl0ZWNfMiAvLyAiZ19mZWUiCmFwcF9nbG9iYWxfZ2V0Cj09Ci8vIHBheW1lbnQgbXVzdCBiZSBmb3IgPj0gKGFwcF9nbG9iYWxfZ2V0ICh1dGY4IGJ5dGVzOiAiZ19mZWUiKSkKYXNzZXJ0CnB1c2hieXRlcyAweDZlNjE2ZDY1IC8vICJuYW1lIgpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDEKY29uY2F0CmZyYW1lX2J1cnkgMQpwdXNoYnl0ZXMgMHg2MjY5NmYgLy8gImJpbyIKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAyCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmNvbmNhdApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSA3CmZyYW1lX2RpZyA3CmZyYW1lX2J1cnkgNgppbnRjXzIgLy8gNApmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIDcKbGVuCisKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmludGNfMyAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgNAppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmZyYW1lX2J1cnkgNwpmcmFtZV9kaWcgNgpmcmFtZV9kaWcgNwpjb25jYXQKZnJhbWVfYnVyeSA2CmZyYW1lX2RpZyA1CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgNAppdG9iCmV4dHJhY3QgNiAwCmNvbmNhdApmcmFtZV9kaWcgNgpjb25jYXQKZnJhbWVfYnVyeSAzCnR4biBTZW5kZXIKYm94X2RlbApwb3AKdHhuIFNlbmRlcgpmcmFtZV9kaWcgMwpib3hfcHV0CmludGNfMSAvLyAxCiEKIQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyB1cGRhdGVfcHJvZmlsZQp1cGRhdGVwcm9maWxlXzI6CnByb3RvIDIgMQpieXRlY18wIC8vICIiCmR1cAppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuIFNlbmRlcgpib3hfbGVuCnN0b3JlIDMKc3RvcmUgMgpsb2FkIDMKLy8gTm90IEV4aXN0CmFzc2VydAp0eG4gU2VuZGVyCmJveF9nZXQKc3RvcmUgNQpzdG9yZSA0CmxvYWQgNQphc3NlcnQKbG9hZCA0CmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgLTIKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmZyYW1lX2J1cnkgNAppbnRjXzIgLy8gNApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDUKbGVuCisKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmludGNfMyAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgMgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAtMQpmcmFtZV9idXJ5IDUKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIDUKY29uY2F0CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgMwpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIDQKY29uY2F0CmZyYW1lX2J1cnkgMQp0eG4gU2VuZGVyCmJveF9kZWwKcG9wCnR4biBTZW5kZXIKZnJhbWVfZGlnIDEKYm94X3B1dApmcmFtZV9kaWcgMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBoZWxsbwpoZWxsb18zOgpwcm90byAxIDEKYnl0ZWNfMCAvLyAiIgpwdXNoYnl0ZXMgMHg0ODY1NmM2YzZmMmMyMCAvLyAiSGVsbG8sICIKZnJhbWVfZGlnIC0xCmV4dHJhY3QgMiAwCmNvbmNhdApmcmFtZV9idXJ5IDAKZnJhbWVfZGlnIDAKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDAKY29uY2F0CmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGluaXRfcHJvZmlsZV9jYXN0ZXIKaW5pdHByb2ZpbGVjYXN0ZXJfNDoKcHJvdG8gMCAwCmludGNfMCAvLyAwCmR1cAp0eG4gR3JvdXBJbmRleAppbnRjXzEgLy8gMQotCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpndHhucyBUeXBlRW51bQppbnRjXzEgLy8gcGF5Cj09CmFzc2VydApmcmFtZV9kaWcgMQpjYWxsc3ViIGluaXRwcm9maWxlXzEKZnJhbWVfYnVyeSAwCmJ5dGVjXzEgLy8gMHgxNTFmN2M3NQpwdXNoYnl0ZXMgMHgwMCAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1YgoKLy8gdXBkYXRlX3Byb2ZpbGVfY2FzdGVyCnVwZGF0ZXByb2ZpbGVjYXN0ZXJfNToKcHJvdG8gMCAwCmJ5dGVjXzAgLy8gIiIKZHVwbiAyCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKZnJhbWVfYnVyeSAxCnR4bmEgQXBwbGljYXRpb25BcmdzIDIKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAxCmZyYW1lX2RpZyAyCmNhbGxzdWIgdXBkYXRlcHJvZmlsZV8yCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKZnJhbWVfZGlnIDAKY29uY2F0CmxvZwpyZXRzdWIKCi8vIGhlbGxvX2Nhc3RlcgpoZWxsb2Nhc3Rlcl82Ogpwcm90byAwIDAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKY2FsbHN1YiBoZWxsb18zCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKZnJhbWVfZGlnIDAKY29uY2F0CmxvZwpyZXRzdWI=",
     "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
   },
   "state": {
     "global": {
       "num_byte_slices": 0,
-      "num_uints": 0
+      "num_uints": 2
     },
     "local": {
       "num_byte_slices": 0,
@@ -49,7 +74,18 @@ export const APP_SPEC: AppSpec = {
   },
   "schema": {
     "global": {
-      "declared": {},
+      "declared": {
+        "g_counter": {
+          "type": "uint64",
+          "key": "g_counter",
+          "descr": "For user counter"
+        },
+        "g_fee": {
+          "type": "uint64",
+          "key": "g_fee",
+          "descr": "Fee to create profile"
+        }
+      },
       "reserved": {}
     },
     "local": {
@@ -60,6 +96,34 @@ export const APP_SPEC: AppSpec = {
   "contract": {
     "name": "algopass",
     "methods": [
+      {
+        "name": "init_profile",
+        "args": [
+          {
+            "type": "pay",
+            "name": "payment"
+          }
+        ],
+        "returns": {
+          "type": "bool"
+        }
+      },
+      {
+        "name": "update_profile",
+        "args": [
+          {
+            "type": "string",
+            "name": "name"
+          },
+          {
+            "type": "string",
+            "name": "bio"
+          }
+        ],
+        "returns": {
+          "type": "(string,string)"
+        }
+      },
       {
         "name": "hello",
         "args": [
@@ -76,9 +140,7 @@ export const APP_SPEC: AppSpec = {
     "networks": {}
   },
   "bare_call_config": {
-    "delete_application": "CALL",
-    "no_op": "CREATE",
-    "update_application": "CALL"
+    "no_op": "CREATE"
   }
 }
 
@@ -137,6 +199,21 @@ export type Algopass = {
    * Maps method signatures / names to their argument and return types.
    */
   methods:
+    & Record<'init_profile(pay)bool' | 'init_profile', {
+      argsObj: {
+        payment: TransactionToSign | Transaction | Promise<SendTransactionResult>
+      }
+      argsTuple: [payment: TransactionToSign | Transaction | Promise<SendTransactionResult>]
+      returns: boolean
+    }>
+    & Record<'update_profile(string,string)(string,string)' | 'update_profile', {
+      argsObj: {
+        name: string
+        bio: string
+      }
+      argsTuple: [name: string, bio: string]
+      returns: UserRecord
+    }>
     & Record<'hello(string)string' | 'hello', {
       argsObj: {
         name: string
@@ -144,6 +221,21 @@ export type Algopass = {
       argsTuple: [name: string]
       returns: string
     }>
+  /**
+   * Defines the shape of the global and local state of the application.
+   */
+  state: {
+    global: {
+      /**
+       * For user counter
+       */
+      'g_counter'?: IntegerState
+      /**
+       * Fee to create profile
+       */
+      'g_fee'?: IntegerState
+    }
+  }
 }
 /**
  * Defines the possible abi call signatures
@@ -160,6 +252,22 @@ export type TypedCallParams<TSignature extends AlgopassSig | undefined> = {
  * Defines the arguments required for a bare call
  */
 export type BareCallArgs = Omit<RawAppCallArgs, keyof CoreAppCallArgs>
+/**
+ * Represents a UserRecord result as a struct
+ */
+export type UserRecord = {
+  name: string
+  bio: string
+}
+/**
+ * Converts the tuple representation of a UserRecord to the struct representation
+ */
+export function UserRecord([name, bio]: [string, string] ) {
+  return {
+    name,
+    bio,
+  }
+}
 /**
  * Maps a method signature from the Algopass smart contract to the method's arguments in either tuple of struct form
  */
@@ -179,24 +287,6 @@ export type AlgopassCreateCalls = (typeof AlgopassCallFactory)['create']
 export type AlgopassCreateCallParams =
   | (TypedCallParams<undefined> & (OnCompleteNoOp))
 /**
- * A factory for available 'update' calls
- */
-export type AlgopassUpdateCalls = (typeof AlgopassCallFactory)['update']
-/**
- * Defines supported update methods for this smart contract
- */
-export type AlgopassUpdateCallParams =
-  | TypedCallParams<undefined>
-/**
- * A factory for available 'delete' calls
- */
-export type AlgopassDeleteCalls = (typeof AlgopassCallFactory)['delete']
-/**
- * Defines supported delete methods for this smart contract
- */
-export type AlgopassDeleteCallParams =
-  | TypedCallParams<undefined>
-/**
  * Defines arguments required for the deploy method.
  */
 export type AlgopassDeployArgs = {
@@ -205,14 +295,6 @@ export type AlgopassDeployArgs = {
    * A delegate which takes a create call factory and returns the create call params for this smart contract
    */
   createCall?: (callFactory: AlgopassCreateCalls) => AlgopassCreateCallParams
-  /**
-   * A delegate which takes a update call factory and returns the update call params for this smart contract
-   */
-  updateCall?: (callFactory: AlgopassUpdateCalls) => AlgopassUpdateCallParams
-  /**
-   * A delegate which takes a delete call factory and returns the delete call params for this smart contract
-   */
-  deleteCall?: (callFactory: AlgopassDeleteCalls) => AlgopassDeleteCallParams
 }
 
 
@@ -242,47 +324,33 @@ export abstract class AlgopassCallFactory {
   }
 
   /**
-   * Gets available update call factories
+   * Constructs a no op call for the init_profile(pay)bool ABI method
+   *
+   * @param args Any args for the contract call
+   * @param params Any additional parameters for the call
+   * @returns A TypedCallParams object for the call
    */
-  static get update() {
+  static initProfile(args: MethodArgs<'init_profile(pay)bool'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
     return {
-      /**
-       * Constructs an update call for the algopass smart contract using a bare call
-       *
-       * @param params Any parameters for the call
-       * @returns A TypedCallParams object for the call
-       */
-      bare(params: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs & AppClientCompilationParams = {}) {
-        return {
-          method: undefined,
-          methodArgs: undefined,
-          ...params,
-        }
-      },
+      method: 'init_profile(pay)bool' as const,
+      methodArgs: Array.isArray(args) ? args : [args.payment],
+      ...params,
     }
   }
-
   /**
-   * Gets available delete call factories
+   * Constructs a no op call for the update_profile(string,string)(string,string) ABI method
+   *
+   * @param args Any args for the contract call
+   * @param params Any additional parameters for the call
+   * @returns A TypedCallParams object for the call
    */
-  static get delete() {
+  static updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
     return {
-      /**
-       * Constructs a delete call for the algopass smart contract using a bare call
-       *
-       * @param params Any parameters for the call
-       * @returns A TypedCallParams object for the call
-       */
-      bare(params: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs = {}) {
-        return {
-          method: undefined,
-          methodArgs: undefined,
-          ...params,
-        }
-      },
+      method: 'update_profile(string,string)(string,string)' as const,
+      methodArgs: Array.isArray(args) ? args : [args.name, args.bio],
+      ...params,
     }
   }
-
   /**
    * Constructs a no op call for the hello(string)string ABI method
    *
@@ -360,12 +428,8 @@ export class AlgopassClient {
    */
   public deploy(params: AlgopassDeployArgs & AppClientDeployCoreParams = {}): ReturnType<ApplicationClient['deploy']> {
     const createArgs = params.createCall?.(AlgopassCallFactory.create)
-    const updateArgs = params.updateCall?.(AlgopassCallFactory.update)
-    const deleteArgs = params.deleteCall?.(AlgopassCallFactory.delete)
     return this.appClient.deploy({
       ...params,
-      updateArgs,
-      deleteArgs,
       createArgs,
       createOnCompleteAction: createArgs?.onCompleteAction,
     })
@@ -390,42 +454,6 @@ export class AlgopassClient {
   }
 
   /**
-   * Gets available update methods
-   */
-  public get update() {
-    const $this = this
-    return {
-      /**
-       * Updates an existing instance of the algopass smart contract using a bare call.
-       *
-       * @param args The arguments for the bare call
-       * @returns The update result
-       */
-      bare(args: BareCallArgs & AppClientCallCoreParams & AppClientCompilationParams & CoreAppCallArgs = {}): Promise<AppCallTransactionResultOfType<undefined>> {
-        return $this.appClient.update(args) as unknown as Promise<AppCallTransactionResultOfType<undefined>>
-      },
-    }
-  }
-
-  /**
-   * Gets available delete methods
-   */
-  public get delete() {
-    const $this = this
-    return {
-      /**
-       * Deletes an existing instance of the algopass smart contract using a bare call.
-       *
-       * @param args The arguments for the bare call
-       * @returns The delete result
-       */
-      bare(args: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs = {}): Promise<AppCallTransactionResultOfType<undefined>> {
-        return $this.appClient.delete(args) as unknown as Promise<AppCallTransactionResultOfType<undefined>>
-      },
-    }
-  }
-
-  /**
    * Makes a clear_state call to an existing instance of the algopass smart contract.
    *
    * @param args The arguments for the bare call
@@ -433,6 +461,28 @@ export class AlgopassClient {
    */
   public clearState(args: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs = {}) {
     return this.appClient.clearState(args)
+  }
+
+  /**
+   * Calls the init_profile(pay)bool ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The result of the call
+   */
+  public initProfile(args: MethodArgs<'init_profile(pay)bool'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
+    return this.call(AlgopassCallFactory.initProfile(args, params))
+  }
+
+  /**
+   * Calls the update_profile(string,string)(string,string) ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The result of the call
+   */
+  public updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
+    return this.call(AlgopassCallFactory.updateProfile(args, params), UserRecord)
   }
 
   /**
@@ -446,36 +496,85 @@ export class AlgopassClient {
     return this.call(AlgopassCallFactory.hello(args, params))
   }
 
+  /**
+   * Extracts a binary state value out of an AppState dictionary
+   *
+   * @param state The state dictionary containing the state value
+   * @param key The key of the state value
+   * @returns A BinaryState instance containing the state value, or undefined if the key was not found
+   */
+  private static getBinaryState(state: AppState, key: string): BinaryState | undefined {
+    const value = state[key]
+    if (!value) return undefined
+    if (!('valueRaw' in value))
+      throw new Error(`Failed to parse state value for ${key}; received an int when expected a byte array`)
+    return {
+      asString(): string {
+        return value.value
+      },
+      asByteArray(): Uint8Array {
+        return value.valueRaw
+      }
+    }
+  }
+
+  /**
+   * Extracts a integer state value out of an AppState dictionary
+   *
+   * @param state The state dictionary containing the state value
+   * @param key The key of the state value
+   * @returns An IntegerState instance containing the state value, or undefined if the key was not found
+   */
+  private static getIntegerState(state: AppState, key: string): IntegerState | undefined {
+    const value = state[key]
+    if (!value) return undefined
+    if ('valueRaw' in value)
+      throw new Error(`Failed to parse state value for ${key}; received a byte array when expected a number`)
+    return {
+      asBigInt() {
+        return typeof value.value === 'bigint' ? value.value : BigInt(value.value)
+      },
+      asNumber(): number {
+        return typeof value.value === 'bigint' ? Number(value.value) : value.value
+      },
+    }
+  }
+
+  /**
+   * Returns the smart contract's global state wrapped in a strongly typed accessor with options to format the stored value
+   */
+  public async getGlobalState(): Promise<Algopass['state']['global']> {
+    const state = await this.appClient.getGlobalState()
+    return {
+      get g_counter() {
+        return AlgopassClient.getIntegerState(state, 'g_counter')
+      },
+      get g_fee() {
+        return AlgopassClient.getIntegerState(state, 'g_fee')
+      },
+    }
+  }
+
   public compose(): AlgopassComposer {
     const client = this
     const atc = new AtomicTransactionComposer()
     let promiseChain:Promise<unknown> = Promise.resolve()
     const resultMappers: Array<undefined | ((x: any) => any)> = []
     return {
+      initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+        promiseChain = promiseChain.then(() => client.initProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
+        resultMappers.push(undefined)
+        return this
+      },
+      updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+        promiseChain = promiseChain.then(() => client.updateProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
+        resultMappers.push(UserRecord)
+        return this
+      },
       hello(args: MethodArgs<'hello(string)string'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
         promiseChain = promiseChain.then(() => client.hello(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(undefined)
         return this
-      },
-      get update() {
-        const $this = this
-        return {
-          bare(args?: BareCallArgs & AppClientCallCoreParams & AppClientCompilationParams & CoreAppCallArgs) {
-            promiseChain = promiseChain.then(() => client.update.bare({...args, sendParams: {...args?.sendParams, skipSending: true, atc}}))
-            resultMappers.push(undefined)
-            return $this
-          },
-        }
-      },
-      get delete() {
-        const $this = this
-        return {
-          bare(args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs) {
-            promiseChain = promiseChain.then(() => client.delete.bare({...args, sendParams: {...args?.sendParams, skipSending: true, atc}}))
-            resultMappers.push(undefined)
-            return $this
-          },
-        }
       },
       clearState(args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs) {
         promiseChain = promiseChain.then(() => client.clearState({...args, sendParams: {...args?.sendParams, skipSending: true, atc}}))
@@ -503,6 +602,24 @@ export class AlgopassClient {
 }
 export type AlgopassComposer<TReturns extends [...any[]] = []> = {
   /**
+   * Calls the init_profile(pay)bool ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
+   */
+  initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'init_profile(pay)bool'>]>
+
+  /**
+   * Calls the update_profile(string,string)(string,string) ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
+   */
+  updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'update_profile(string,string)(string,string)'>]>
+
+  /**
    * Calls the hello(string)string ABI method.
    *
    * @param args The arguments for the contract call
@@ -510,32 +627,6 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
   hello(args: MethodArgs<'hello(string)string'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'hello(string)string'>]>
-
-  /**
-   * Gets available update methods
-   */
-  readonly update: {
-    /**
-     * Updates an existing instance of the algopass smart contract using a bare call.
-     *
-     * @param args The arguments for the bare call
-     * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
-     */
-    bare(args?: BareCallArgs & AppClientCallCoreParams & AppClientCompilationParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, undefined]>
-  }
-
-  /**
-   * Gets available delete methods
-   */
-  readonly delete: {
-    /**
-     * Deletes an existing instance of the algopass smart contract using a bare call.
-     *
-     * @param args The arguments for the bare call
-     * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
-     */
-    bare(args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, undefined]>
-  }
 
   /**
    * Makes a clear_state call to an existing instance of the algopass smart contract.
