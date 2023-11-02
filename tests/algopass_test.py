@@ -93,7 +93,7 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
     #             boxes=boxes
     #         ),
     #     )
-    # except:  # noqa: E722
+    # except:
     #     print("Task failed successfully")
 
 

@@ -60,7 +60,8 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
 
 
 @app.external
-def update_profile(name: pt.abi.String, bio: pt.abi.String, *, output: UserRecord) -> pt.Expr:
+def update_profile(name: pt.abi.String, bio: pt.abi.String,
+                   *, output: UserRecord) -> pt.Expr:
     return pt.Seq(
         pt.Assert(
             state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"
