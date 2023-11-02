@@ -22,153 +22,154 @@ import type {
   ApplicationClient,
 } from '@algorandfoundation/algokit-utils/types/app-client'
 import type { AppSpec } from '@algorandfoundation/algokit-utils/types/app-spec'
-import type {
-  SendTransactionResult,
-  TransactionToSign,
-  SendTransactionFrom,
-} from '@algorandfoundation/algokit-utils/types/transaction'
+import type { SendTransactionResult, TransactionToSign, SendTransactionFrom } from '@algorandfoundation/algokit-utils/types/transaction'
 import type { TransactionWithSigner } from 'algosdk'
 import { Algodv2, OnApplicationComplete, Transaction, AtomicTransactionComposer } from 'algosdk'
 export const APP_SPEC: AppSpec = {
-  hints: {
-    'init_profile(pay)bool': {
-      call_config: {
-        no_op: 'CALL',
-      },
+  "hints": {
+    "init_profile(pay)bool": {
+      "call_config": {
+        "no_op": "CALL"
+      }
     },
-    'update_profile(string,string)(string,string)': {
-      structs: {
-        output: {
-          name: 'UserRecord',
-          elements: [
-            ['name', 'string'],
-            ['bio', 'string'],
-          ],
+    "update_profile(string,string)(string,string)": {
+      "structs": {
+        "output": {
+          "name": "UserRecord",
+          "elements": [
+            [
+              "name",
+              "string"
+            ],
+            [
+              "bio",
+              "string"
+            ]
+          ]
+        }
+      },
+      "call_config": {
+        "no_op": "CALL"
+      }
+    },
+    "hello(string)string": {
+      "call_config": {
+        "no_op": "CALL"
+      }
+    }
+  },
+  "source": {
+    "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0IDY1NTM2CmJ5dGVjYmxvY2sgMHggMHg2NzVmNjM2Zjc1NmU3NDY1NzIgMHgxNTFmN2M3NSAweDY3NWY2NjY1NjUKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDgKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgzYzZmMTA0OSAvLyAiaW5pdF9wcm9maWxlKHBheSlib29sIgo9PQpibnogbWFpbl9sNwp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweGI4MTEzMDcxIC8vICJ1cGRhdGVfcHJvZmlsZShzdHJpbmcsc3RyaW5nKShzdHJpbmcsc3RyaW5nKSIKPT0KYm56IG1haW5fbDYKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgwMmJlY2UxMSAvLyAiaGVsbG8oc3RyaW5nKXN0cmluZyIKPT0KYm56IG1haW5fbDUKZXJyCm1haW5fbDU6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaGVsbG9jYXN0ZXJfNgppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sNjoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiB1cGRhdGVwcm9maWxlY2FzdGVyXzUKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDc6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaW5pdHByb2ZpbGVjYXN0ZXJfNAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sODoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQpibnogbWFpbl9sMTAKZXJyCm1haW5fbDEwOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAo9PQphc3NlcnQKY2FsbHN1YiBjcmVhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIGNyZWF0ZQpjcmVhdGVfMDoKcHJvdG8gMCAwCmJ5dGVjXzEgLy8gImdfY291bnRlciIKaW50Y18wIC8vIDAKYXBwX2dsb2JhbF9wdXQKYnl0ZWNfMyAvLyAiZ19mZWUiCnB1c2hpbnQgMTAwMDAwMCAvLyAxMDAwMDAwCmFwcF9nbG9iYWxfcHV0CnJldHN1YgoKLy8gaW5pdF9wcm9maWxlCmluaXRwcm9maWxlXzE6CnByb3RvIDEgMQppbnRjXzAgLy8gMApieXRlY18wIC8vICIiCmR1cG4gMgppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuIFNlbmRlcgpib3hfbGVuCnN0b3JlIDEKc3RvcmUgMApsb2FkIDEKIQovLyBJbml0aWFsaXplZAphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIFJlY2VpdmVyCmdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCj09Ci8vIFdyb25nIHJlY2VpdmVyCmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgQW1vdW50CmJ5dGVjXzMgLy8gImdfZmVlIgphcHBfZ2xvYmFsX2dldAo9PQovLyBwYXltZW50IG11c3QgYmUgZm9yID49IChhcHBfZ2xvYmFsX2dldCAodXRmOCBieXRlczogImdfZmVlIikpCmFzc2VydApieXRlY18xIC8vICJnX2NvdW50ZXIiCmJ5dGVjXzEgLy8gImdfY291bnRlciIKYXBwX2dsb2JhbF9nZXQKaW50Y18xIC8vIDEKKwphcHBfZ2xvYmFsX3B1dApwdXNoYnl0ZXMgMHg2ZTYxNmQ2NSAvLyAibmFtZSIKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAxCmNvbmNhdApmcmFtZV9idXJ5IDEKcHVzaGJ5dGVzIDB4NjI2OTZmIC8vICJiaW8iCmZyYW1lX2J1cnkgMgpmcmFtZV9kaWcgMgpsZW4KaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMgpjb25jYXQKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAxCmZyYW1lX2J1cnkgNwpmcmFtZV9kaWcgNwpmcmFtZV9idXJ5IDYKaW50Y18yIC8vIDQKZnJhbWVfYnVyeSA0CmZyYW1lX2RpZyA0CmZyYW1lX2RpZyA3CmxlbgorCmZyYW1lX2J1cnkgNQpmcmFtZV9kaWcgNQppbnRjXzMgLy8gNjU1MzYKPAphc3NlcnQKZnJhbWVfZGlnIDQKaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMgpmcmFtZV9idXJ5IDcKZnJhbWVfZGlnIDYKZnJhbWVfZGlnIDcKY29uY2F0CmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNQpmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDQKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIDYKY29uY2F0CmZyYW1lX2J1cnkgMwp0eG4gU2VuZGVyCmJveF9kZWwKcG9wCnR4biBTZW5kZXIKZnJhbWVfZGlnIDMKYm94X3B1dAppbnRjXzEgLy8gMQohCiEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gdXBkYXRlX3Byb2ZpbGUKdXBkYXRlcHJvZmlsZV8yOgpwcm90byAyIDEKYnl0ZWNfMCAvLyAiIgpkdXAKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4biBTZW5kZXIKYm94X2xlbgpzdG9yZSAzCnN0b3JlIDIKbG9hZCAzCi8vIE5vdCBFeGlzdAphc3NlcnQKdHhuIFNlbmRlcgpib3hfZ2V0CnN0b3JlIDUKc3RvcmUgNApsb2FkIDUKYXNzZXJ0CmxvYWQgNApmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIC0yCmZyYW1lX2J1cnkgNQpmcmFtZV9kaWcgNQpmcmFtZV9idXJ5IDQKaW50Y18yIC8vIDQKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAyCmZyYW1lX2RpZyA1CmxlbgorCmZyYW1lX2J1cnkgMwpmcmFtZV9kaWcgMwppbnRjXzMgLy8gNjU1MzYKPAphc3NlcnQKZnJhbWVfZGlnIDIKaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgLTEKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA0CmZyYW1lX2RpZyA1CmNvbmNhdApmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDMKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAyCml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyA0CmNvbmNhdApmcmFtZV9idXJ5IDEKdHhuIFNlbmRlcgpib3hfZGVsCnBvcAp0eG4gU2VuZGVyCmZyYW1lX2RpZyAxCmJveF9wdXQKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gaGVsbG8KaGVsbG9fMzoKcHJvdG8gMSAxCmJ5dGVjXzAgLy8gIiIKcHVzaGJ5dGVzIDB4NDg2NTZjNmM2ZjJjMjAgLy8gIkhlbGxvLCAiCmZyYW1lX2RpZyAtMQpleHRyYWN0IDIgMApjb25jYXQKZnJhbWVfYnVyeSAwCmZyYW1lX2RpZyAwCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAwCmNvbmNhdApmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBpbml0X3Byb2ZpbGVfY2FzdGVyCmluaXRwcm9maWxlY2FzdGVyXzQ6CnByb3RvIDAgMAppbnRjXzAgLy8gMApkdXAKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKY2FsbHN1YiBpbml0cHJvZmlsZV8xCmZyYW1lX2J1cnkgMApieXRlY18yIC8vIDB4MTUxZjdjNzUKcHVzaGJ5dGVzIDB4MDAgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWIKCi8vIHVwZGF0ZV9wcm9maWxlX2Nhc3Rlcgp1cGRhdGVwcm9maWxlY2FzdGVyXzU6CnByb3RvIDAgMApieXRlY18wIC8vICIiCmR1cG4gMgp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmZyYW1lX2J1cnkgMQp0eG5hIEFwcGxpY2F0aW9uQXJncyAyCmZyYW1lX2J1cnkgMgpmcmFtZV9kaWcgMQpmcmFtZV9kaWcgMgpjYWxsc3ViIHVwZGF0ZXByb2ZpbGVfMgpmcmFtZV9idXJ5IDAKYnl0ZWNfMiAvLyAweDE1MWY3Yzc1CmZyYW1lX2RpZyAwCmNvbmNhdApsb2cKcmV0c3ViCgovLyBoZWxsb19jYXN0ZXIKaGVsbG9jYXN0ZXJfNjoKcHJvdG8gMCAwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmNhbGxzdWIgaGVsbG9fMwpmcmFtZV9idXJ5IDAKYnl0ZWNfMiAvLyAweDE1MWY3Yzc1CmZyYW1lX2RpZyAwCmNvbmNhdApsb2cKcmV0c3Vi",
+    "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
+  },
+  "state": {
+    "global": {
+      "num_byte_slices": 0,
+      "num_uints": 2
+    },
+    "local": {
+      "num_byte_slices": 0,
+      "num_uints": 0
+    }
+  },
+  "schema": {
+    "global": {
+      "declared": {
+        "g_counter": {
+          "type": "uint64",
+          "key": "g_counter",
+          "descr": "For user counter"
         },
+        "g_fee": {
+          "type": "uint64",
+          "key": "g_fee",
+          "descr": "Fee to create profile"
+        }
       },
-      call_config: {
-        no_op: 'CALL',
-      },
+      "reserved": {}
     },
-    'hello(string)string': {
-      call_config: {
-        no_op: 'CALL',
-      },
-    },
+    "local": {
+      "declared": {},
+      "reserved": {}
+    }
   },
-  source: {
-    approval:
-      'I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA0IDY1NTM2CmJ5dGVjYmxvY2sgMHggMHgxNTFmN2M3NSAweDY3NWY2NjY1NjUKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDgKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgzYzZmMTA0OSAvLyAiaW5pdF9wcm9maWxlKHBheSlib29sIgo9PQpibnogbWFpbl9sNwp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweGI4MTEzMDcxIC8vICJ1cGRhdGVfcHJvZmlsZShzdHJpbmcsc3RyaW5nKShzdHJpbmcsc3RyaW5nKSIKPT0KYm56IG1haW5fbDYKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgwMmJlY2UxMSAvLyAiaGVsbG8oc3RyaW5nKXN0cmluZyIKPT0KYm56IG1haW5fbDUKZXJyCm1haW5fbDU6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaGVsbG9jYXN0ZXJfNgppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sNjoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiB1cGRhdGVwcm9maWxlY2FzdGVyXzUKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDc6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaW5pdHByb2ZpbGVjYXN0ZXJfNAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sODoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQpibnogbWFpbl9sMTAKZXJyCm1haW5fbDEwOgp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAo9PQphc3NlcnQKY2FsbHN1YiBjcmVhdGVfMAppbnRjXzEgLy8gMQpyZXR1cm4KCi8vIGNyZWF0ZQpjcmVhdGVfMDoKcHJvdG8gMCAwCnB1c2hieXRlcyAweDY3NWY2MzZmNzU2ZTc0NjU3MiAvLyAiZ19jb3VudGVyIgppbnRjXzAgLy8gMAphcHBfZ2xvYmFsX3B1dApieXRlY18yIC8vICJnX2ZlZSIKcHVzaGludCAxMDAwMDAwIC8vIDEwMDAwMDAKYXBwX2dsb2JhbF9wdXQKcmV0c3ViCgovLyBpbml0X3Byb2ZpbGUKaW5pdHByb2ZpbGVfMToKcHJvdG8gMSAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKZHVwbiAyCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG4gU2VuZGVyCmJveF9sZW4Kc3RvcmUgMQpzdG9yZSAwCmxvYWQgMQohCi8vIEluaXRpYWxpemVkCmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgUmVjZWl2ZXIKZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKPT0KLy8gV3JvbmcgcmVjZWl2ZXIKYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBBbW91bnQKYnl0ZWNfMiAvLyAiZ19mZWUiCmFwcF9nbG9iYWxfZ2V0Cj09Ci8vIHBheW1lbnQgbXVzdCBiZSBmb3IgPj0gKGFwcF9nbG9iYWxfZ2V0ICh1dGY4IGJ5dGVzOiAiZ19mZWUiKSkKYXNzZXJ0CnB1c2hieXRlcyAweDZlNjE2ZDY1IC8vICJuYW1lIgpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDEKY29uY2F0CmZyYW1lX2J1cnkgMQpwdXNoYnl0ZXMgMHg2MjY5NmYgLy8gImJpbyIKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAyCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmNvbmNhdApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSA3CmZyYW1lX2RpZyA3CmZyYW1lX2J1cnkgNgppbnRjXzIgLy8gNApmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIDcKbGVuCisKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmludGNfMyAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgNAppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmZyYW1lX2J1cnkgNwpmcmFtZV9kaWcgNgpmcmFtZV9kaWcgNwpjb25jYXQKZnJhbWVfYnVyeSA2CmZyYW1lX2RpZyA1CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgNAppdG9iCmV4dHJhY3QgNiAwCmNvbmNhdApmcmFtZV9kaWcgNgpjb25jYXQKZnJhbWVfYnVyeSAzCnR4biBTZW5kZXIKYm94X2RlbApwb3AKdHhuIFNlbmRlcgpmcmFtZV9kaWcgMwpib3hfcHV0CmludGNfMSAvLyAxCiEKIQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyB1cGRhdGVfcHJvZmlsZQp1cGRhdGVwcm9maWxlXzI6CnByb3RvIDIgMQpieXRlY18wIC8vICIiCmR1cAppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuIFNlbmRlcgpib3hfbGVuCnN0b3JlIDMKc3RvcmUgMgpsb2FkIDMKLy8gTm90IEV4aXN0CmFzc2VydAp0eG4gU2VuZGVyCmJveF9nZXQKc3RvcmUgNQpzdG9yZSA0CmxvYWQgNQphc3NlcnQKbG9hZCA0CmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgLTIKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmZyYW1lX2J1cnkgNAppbnRjXzIgLy8gNApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDUKbGVuCisKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmludGNfMyAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgMgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAtMQpmcmFtZV9idXJ5IDUKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIDUKY29uY2F0CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgMwpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIDQKY29uY2F0CmZyYW1lX2J1cnkgMQp0eG4gU2VuZGVyCmJveF9kZWwKcG9wCnR4biBTZW5kZXIKZnJhbWVfZGlnIDEKYm94X3B1dApmcmFtZV9kaWcgMQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyBoZWxsbwpoZWxsb18zOgpwcm90byAxIDEKYnl0ZWNfMCAvLyAiIgpwdXNoYnl0ZXMgMHg0ODY1NmM2YzZmMmMyMCAvLyAiSGVsbG8sICIKZnJhbWVfZGlnIC0xCmV4dHJhY3QgMiAwCmNvbmNhdApmcmFtZV9idXJ5IDAKZnJhbWVfZGlnIDAKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDAKY29uY2F0CmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGluaXRfcHJvZmlsZV9jYXN0ZXIKaW5pdHByb2ZpbGVjYXN0ZXJfNDoKcHJvdG8gMCAwCmludGNfMCAvLyAwCmR1cAp0eG4gR3JvdXBJbmRleAppbnRjXzEgLy8gMQotCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpndHhucyBUeXBlRW51bQppbnRjXzEgLy8gcGF5Cj09CmFzc2VydApmcmFtZV9kaWcgMQpjYWxsc3ViIGluaXRwcm9maWxlXzEKZnJhbWVfYnVyeSAwCmJ5dGVjXzEgLy8gMHgxNTFmN2M3NQpwdXNoYnl0ZXMgMHgwMCAvLyAweDAwCmludGNfMCAvLyAwCmZyYW1lX2RpZyAwCnNldGJpdApjb25jYXQKbG9nCnJldHN1YgoKLy8gdXBkYXRlX3Byb2ZpbGVfY2FzdGVyCnVwZGF0ZXByb2ZpbGVjYXN0ZXJfNToKcHJvdG8gMCAwCmJ5dGVjXzAgLy8gIiIKZHVwbiAyCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKZnJhbWVfYnVyeSAxCnR4bmEgQXBwbGljYXRpb25BcmdzIDIKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAxCmZyYW1lX2RpZyAyCmNhbGxzdWIgdXBkYXRlcHJvZmlsZV8yCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKZnJhbWVfZGlnIDAKY29uY2F0CmxvZwpyZXRzdWIKCi8vIGhlbGxvX2Nhc3RlcgpoZWxsb2Nhc3Rlcl82Ogpwcm90byAwIDAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKY2FsbHN1YiBoZWxsb18zCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKZnJhbWVfZGlnIDAKY29uY2F0CmxvZwpyZXRzdWI=',
-    clear: 'I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu',
-  },
-  state: {
-    global: {
-      num_byte_slices: 0,
-      num_uints: 2,
-    },
-    local: {
-      num_byte_slices: 0,
-      num_uints: 0,
-    },
-  },
-  schema: {
-    global: {
-      declared: {
-        g_counter: {
-          type: 'uint64',
-          key: 'g_counter',
-          descr: 'For user counter',
-        },
-        g_fee: {
-          type: 'uint64',
-          key: 'g_fee',
-          descr: 'Fee to create profile',
-        },
-      },
-      reserved: {},
-    },
-    local: {
-      declared: {},
-      reserved: {},
-    },
-  },
-  contract: {
-    name: 'algopass',
-    methods: [
+  "contract": {
+    "name": "algopass",
+    "methods": [
       {
-        name: 'init_profile',
-        args: [
+        "name": "init_profile",
+        "args": [
           {
-            type: 'pay',
-            name: 'payment',
-          },
+            "type": "pay",
+            "name": "payment"
+          }
         ],
-        returns: {
-          type: 'bool',
-        },
-      },
-      {
-        name: 'update_profile',
-        args: [
-          {
-            type: 'string',
-            name: 'name',
-          },
-          {
-            type: 'string',
-            name: 'bio',
-          },
-        ],
-        returns: {
-          type: '(string,string)',
-        },
+        "returns": {
+          "type": "bool"
+        }
       },
       {
-        name: 'hello',
-        args: [
+        "name": "update_profile",
+        "args": [
           {
-            type: 'string',
-            name: 'name',
+            "type": "string",
+            "name": "name"
           },
+          {
+            "type": "string",
+            "name": "bio"
+          }
         ],
-        returns: {
-          type: 'string',
-        },
+        "returns": {
+          "type": "(string,string)"
+        }
       },
+      {
+        "name": "hello",
+        "args": [
+          {
+            "type": "string",
+            "name": "name"
+          }
+        ],
+        "returns": {
+          "type": "string"
+        }
+      }
     ],
-    networks: {},
+    "networks": {}
   },
-  bare_call_config: {
-    no_op: 'CREATE',
-  },
+  "bare_call_config": {
+    "no_op": "CREATE"
+  }
 }
 
 /**
  * Defines an onCompletionAction of 'no_op'
  */
-export type OnCompleteNoOp = { onCompleteAction?: 'no_op' | OnApplicationComplete.NoOpOC }
+export type OnCompleteNoOp =  { onCompleteAction?: 'no_op' | OnApplicationComplete.NoOpOC }
 /**
  * Defines an onCompletionAction of 'opt_in'
  */
-export type OnCompleteOptIn = { onCompleteAction: 'opt_in' | OnApplicationComplete.OptInOC }
+export type OnCompleteOptIn =  { onCompleteAction: 'opt_in' | OnApplicationComplete.OptInOC }
 /**
  * Defines an onCompletionAction of 'close_out'
  */
-export type OnCompleteCloseOut = { onCompleteAction: 'close_out' | OnApplicationComplete.CloseOutOC }
+export type OnCompleteCloseOut =  { onCompleteAction: 'close_out' | OnApplicationComplete.CloseOutOC }
 /**
  * Defines an onCompletionAction of 'delete_application'
  */
-export type OnCompleteDelApp = { onCompleteAction: 'delete_application' | OnApplicationComplete.DeleteApplicationOC }
+export type OnCompleteDelApp =  { onCompleteAction: 'delete_application' | OnApplicationComplete.DeleteApplicationOC }
 /**
  * Defines an onCompletionAction of 'update_application'
  */
-export type OnCompleteUpdApp = { onCompleteAction: 'update_application' | OnApplicationComplete.UpdateApplicationOC }
+export type OnCompleteUpdApp =  { onCompleteAction: 'update_application' | OnApplicationComplete.UpdateApplicationOC }
 /**
  * A state record containing a single unsigned integer
  */
 export type IntegerState = {
   /**
-   * Gets the state value as a BigInt
+   * Gets the state value as a BigInt 
    */
   asBigInt(): bigint
   /**
@@ -197,37 +198,29 @@ export type Algopass = {
   /**
    * Maps method signatures / names to their argument and return types.
    */
-  methods: Record<
-    'init_profile(pay)bool' | 'init_profile',
-    {
+  methods:
+    & Record<'init_profile(pay)bool' | 'init_profile', {
       argsObj: {
         payment: TransactionToSign | Transaction | Promise<SendTransactionResult>
       }
       argsTuple: [payment: TransactionToSign | Transaction | Promise<SendTransactionResult>]
       returns: boolean
-    }
-  > &
-    Record<
-      'update_profile(string,string)(string,string)' | 'update_profile',
-      {
-        argsObj: {
-          name: string
-          bio: string
-        }
-        argsTuple: [name: string, bio: string]
-        returns: UserRecord
+    }>
+    & Record<'update_profile(string,string)(string,string)' | 'update_profile', {
+      argsObj: {
+        name: string
+        bio: string
       }
-    > &
-    Record<
-      'hello(string)string' | 'hello',
-      {
-        argsObj: {
-          name: string
-        }
-        argsTuple: [name: string]
-        returns: string
+      argsTuple: [name: string, bio: string]
+      returns: UserRecord
+    }>
+    & Record<'hello(string)string' | 'hello', {
+      argsObj: {
+        name: string
       }
-    >
+      argsTuple: [name: string]
+      returns: string
+    }>
   /**
    * Defines the shape of the global and local state of the application.
    */
@@ -236,11 +229,11 @@ export type Algopass = {
       /**
        * For user counter
        */
-      g_counter?: IntegerState
+      'g_counter'?: IntegerState
       /**
        * Fee to create profile
        */
-      g_fee?: IntegerState
+      'g_fee'?: IntegerState
     }
   }
 }
@@ -254,8 +247,7 @@ export type AlgopassSig = keyof Algopass['methods']
 export type TypedCallParams<TSignature extends AlgopassSig | undefined> = {
   method: TSignature
   methodArgs: TSignature extends undefined ? undefined : Array<ABIAppCallArg | undefined>
-} & AppClientCallCoreParams &
-  CoreAppCallArgs
+} & AppClientCallCoreParams & CoreAppCallArgs
 /**
  * Defines the arguments required for a bare call
  */
@@ -270,7 +262,7 @@ export type UserRecord = {
 /**
  * Converts the tuple representation of a UserRecord to the struct representation
  */
-export function UserRecord([name, bio]: [string, string]) {
+export function UserRecord([name, bio]: [string, string] ) {
   return {
     name,
     bio,
@@ -292,7 +284,8 @@ export type AlgopassCreateCalls = (typeof AlgopassCallFactory)['create']
 /**
  * Defines supported create methods for this smart contract
  */
-export type AlgopassCreateCallParams = TypedCallParams<undefined> & OnCompleteNoOp
+export type AlgopassCreateCallParams =
+  | (TypedCallParams<undefined> & (OnCompleteNoOp))
 /**
  * Defines arguments required for the deploy method.
  */
@@ -303,6 +296,7 @@ export type AlgopassDeployArgs = {
    */
   createCall?: (callFactory: AlgopassCreateCalls) => AlgopassCreateCallParams
 }
+
 
 /**
  * Exposes methods for constructing all available smart contract calls
@@ -319,13 +313,7 @@ export abstract class AlgopassCallFactory {
        * @param params Any parameters for the call
        * @returns A TypedCallParams object for the call
        */
-      bare(
-        params: BareCallArgs &
-          AppClientCallCoreParams &
-          CoreAppCallArgs &
-          AppClientCompilationParams &
-          OnCompleteNoOp = {},
-      ) {
+      bare(params: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs & AppClientCompilationParams & (OnCompleteNoOp) = {}) {
         return {
           method: undefined,
           methodArgs: undefined,
@@ -356,10 +344,7 @@ export abstract class AlgopassCallFactory {
    * @param params Any additional parameters for the call
    * @returns A TypedCallParams object for the call
    */
-  static updateProfile(
-    args: MethodArgs<'update_profile(string,string)(string,string)'>,
-    params: AppClientCallCoreParams & CoreAppCallArgs,
-  ) {
+  static updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
     return {
       method: 'update_profile(string,string)(string,string)' as const,
       methodArgs: Array.isArray(args) ? args : [args.name, args.bio],
@@ -401,13 +386,10 @@ export class AlgopassClient {
    */
   constructor(appDetails: AppDetails, private algod: Algodv2) {
     this.sender = appDetails.sender
-    this.appClient = algokit.getAppClient(
-      {
-        ...appDetails,
-        app: APP_SPEC,
-      },
-      algod,
-    )
+    this.appClient = algokit.getAppClient({
+      ...appDetails,
+      app: APP_SPEC
+    }, algod)
   }
 
   /**
@@ -417,18 +399,14 @@ export class AlgopassClient {
    * @param returnValueFormatter An optional delegate to format the return value if required
    * @returns The smart contract response with an updated return value
    */
-  protected mapReturnValue<TReturn>(
-    result: AppCallTransactionResult,
-    returnValueFormatter?: (value: any) => TReturn,
-  ): AppCallTransactionResultOfType<TReturn> {
-    if (result.return?.decodeError) {
+  protected mapReturnValue<TReturn>(result: AppCallTransactionResult, returnValueFormatter?: (value: any) => TReturn): AppCallTransactionResultOfType<TReturn> {
+    if(result.return?.decodeError) {
       throw result.return.decodeError
     }
-    const returnValue =
-      result.return?.returnValue !== undefined && returnValueFormatter !== undefined
-        ? returnValueFormatter(result.return.returnValue)
-        : (result.return?.returnValue as TReturn | undefined)
-    return { ...result, return: returnValue }
+    const returnValue = result.return?.returnValue !== undefined && returnValueFormatter !== undefined
+      ? returnValueFormatter(result.return.returnValue)
+      : result.return?.returnValue as TReturn | undefined
+      return { ...result, return: returnValue }
   }
 
   /**
@@ -438,14 +416,8 @@ export class AlgopassClient {
    * @param returnValueFormatter An optional delegate which when provided will be used to map non-undefined return values to the target type
    * @returns The result of the smart contract call
    */
-  public async call<TSignature extends keyof Algopass['methods']>(
-    typedCallParams: TypedCallParams<TSignature>,
-    returnValueFormatter?: (value: any) => MethodReturn<TSignature>,
-  ) {
-    return this.mapReturnValue<MethodReturn<TSignature>>(
-      await this.appClient.call(typedCallParams),
-      returnValueFormatter,
-    )
+  public async call<TSignature extends keyof Algopass['methods']>(typedCallParams: TypedCallParams<TSignature>, returnValueFormatter?: (value: any) => MethodReturn<TSignature>) {
+    return this.mapReturnValue<MethodReturn<TSignature>>(await this.appClient.call(typedCallParams), returnValueFormatter)
   }
 
   /**
@@ -475,13 +447,7 @@ export class AlgopassClient {
        * @param args The arguments for the bare call
        * @returns The create result
        */
-      bare(
-        args: BareCallArgs &
-          AppClientCallCoreParams &
-          AppClientCompilationParams &
-          CoreAppCallArgs &
-          OnCompleteNoOp = {},
-      ): Promise<AppCallTransactionResultOfType<undefined>> {
+      bare(args: BareCallArgs & AppClientCallCoreParams & AppClientCompilationParams & CoreAppCallArgs & (OnCompleteNoOp) = {}): Promise<AppCallTransactionResultOfType<undefined>> {
         return $this.appClient.create(args) as unknown as Promise<AppCallTransactionResultOfType<undefined>>
       },
     }
@@ -504,10 +470,7 @@ export class AlgopassClient {
    * @param params Any additional parameters for the call
    * @returns The result of the call
    */
-  public initProfile(
-    args: MethodArgs<'init_profile(pay)bool'>,
-    params: AppClientCallCoreParams & CoreAppCallArgs = {},
-  ) {
+  public initProfile(args: MethodArgs<'init_profile(pay)bool'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
     return this.call(AlgopassCallFactory.initProfile(args, params))
   }
 
@@ -518,10 +481,7 @@ export class AlgopassClient {
    * @param params Any additional parameters for the call
    * @returns The result of the call
    */
-  public updateProfile(
-    args: MethodArgs<'update_profile(string,string)(string,string)'>,
-    params: AppClientCallCoreParams & CoreAppCallArgs = {},
-  ) {
+  public updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
     return this.call(AlgopassCallFactory.updateProfile(args, params), UserRecord)
   }
 
@@ -554,7 +514,7 @@ export class AlgopassClient {
       },
       asByteArray(): Uint8Array {
         return value.valueRaw
-      },
+      }
     }
   }
 
@@ -598,47 +558,31 @@ export class AlgopassClient {
   public compose(): AlgopassComposer {
     const client = this
     const atc = new AtomicTransactionComposer()
-    let promiseChain: Promise<unknown> = Promise.resolve()
+    let promiseChain:Promise<unknown> = Promise.resolve()
     const resultMappers: Array<undefined | ((x: any) => any)> = []
     return {
       initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
-        promiseChain = promiseChain.then(() =>
-          client.initProfile(args, { ...params, sendParams: { ...params?.sendParams, skipSending: true, atc } }),
-        )
+        promiseChain = promiseChain.then(() => client.initProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(undefined)
         return this
       },
-      updateProfile(
-        args: MethodArgs<'update_profile(string,string)(string,string)'>,
-        params?: AppClientCallCoreParams & CoreAppCallArgs,
-      ) {
-        promiseChain = promiseChain.then(() =>
-          client.updateProfile(args, { ...params, sendParams: { ...params?.sendParams, skipSending: true, atc } }),
-        )
+      updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+        promiseChain = promiseChain.then(() => client.updateProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(UserRecord)
         return this
       },
       hello(args: MethodArgs<'hello(string)string'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
-        promiseChain = promiseChain.then(() =>
-          client.hello(args, { ...params, sendParams: { ...params?.sendParams, skipSending: true, atc } }),
-        )
+        promiseChain = promiseChain.then(() => client.hello(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(undefined)
         return this
       },
       clearState(args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs) {
-        promiseChain = promiseChain.then(() =>
-          client.clearState({ ...args, sendParams: { ...args?.sendParams, skipSending: true, atc } }),
-        )
+        promiseChain = promiseChain.then(() => client.clearState({...args, sendParams: {...args?.sendParams, skipSending: true, atc}}))
         resultMappers.push(undefined)
         return this
       },
-      addTransaction(
-        txn: TransactionWithSigner | TransactionToSign | Transaction | Promise<SendTransactionResult>,
-        defaultSender?: SendTransactionFrom,
-      ) {
-        promiseChain = promiseChain.then(async () =>
-          atc.addTransaction(await algokit.getTransactionWithSigner(txn, defaultSender ?? client.sender)),
-        )
+      addTransaction(txn: TransactionWithSigner | TransactionToSign | Transaction | Promise<SendTransactionResult>, defaultSender?: SendTransactionFrom) {
+        promiseChain = promiseChain.then(async () => atc.addTransaction(await algokit.getTransactionWithSigner(txn, defaultSender ?? client.sender)))
         return this
       },
       async atc() {
@@ -650,11 +594,9 @@ export class AlgopassClient {
         const result = await algokit.sendAtomicTransactionComposer({ atc, sendParams: {} }, client.algod)
         return {
           ...result,
-          returns: result.returns?.map((val, i) =>
-            resultMappers[i] !== undefined ? resultMappers[i]!(val.returnValue) : val.returnValue,
-          ),
+          returns: result.returns?.map((val, i) => resultMappers[i] !== undefined ? resultMappers[i]!(val.returnValue) : val.returnValue)
         }
-      },
+      }
     } as unknown as AlgopassComposer
   }
 }
@@ -666,10 +608,7 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  initProfile(
-    args: MethodArgs<'init_profile(pay)bool'>,
-    params?: AppClientCallCoreParams & CoreAppCallArgs,
-  ): AlgopassComposer<[...TReturns, MethodReturn<'init_profile(pay)bool'>]>
+  initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'init_profile(pay)bool'>]>
 
   /**
    * Calls the update_profile(string,string)(string,string) ABI method.
@@ -678,10 +617,7 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  updateProfile(
-    args: MethodArgs<'update_profile(string,string)(string,string)'>,
-    params?: AppClientCallCoreParams & CoreAppCallArgs,
-  ): AlgopassComposer<[...TReturns, MethodReturn<'update_profile(string,string)(string,string)'>]>
+  updateProfile(args: MethodArgs<'update_profile(string,string)(string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'update_profile(string,string)(string,string)'>]>
 
   /**
    * Calls the hello(string)string ABI method.
@@ -690,10 +626,7 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  hello(
-    args: MethodArgs<'hello(string)string'>,
-    params?: AppClientCallCoreParams & CoreAppCallArgs,
-  ): AlgopassComposer<[...TReturns, MethodReturn<'hello(string)string'>]>
+  hello(args: MethodArgs<'hello(string)string'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'hello(string)string'>]>
 
   /**
    * Makes a clear_state call to an existing instance of the algopass smart contract.
@@ -701,9 +634,7 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @param args The arguments for the bare call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  clearState(
-    args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs,
-  ): AlgopassComposer<[...TReturns, undefined]>
+  clearState(args?: BareCallArgs & AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, undefined]>
 
   /**
    * Adds a transaction to the composer
@@ -711,10 +642,7 @@ export type AlgopassComposer<TReturns extends [...any[]] = []> = {
    * @param txn One of: A TransactionWithSigner object (returned as is), a TransactionToSign object (signer is obtained from the signer property), a Transaction object (signer is extracted from the defaultSender parameter), an async SendTransactionResult returned by one of algokit utils helpers (signer is obtained from the defaultSender parameter)
    * @param defaultSender The default sender to be used to obtain a signer where the object provided to the transaction parameter does not include a signer.
    */
-  addTransaction(
-    txn: TransactionWithSigner | TransactionToSign | Transaction | Promise<SendTransactionResult>,
-    defaultSender?: SendTransactionFrom,
-  ): AlgopassComposer<TReturns>
+  addTransaction(txn: TransactionWithSigner | TransactionToSign | Transaction | Promise<SendTransactionResult>, defaultSender?: SendTransactionFrom): AlgopassComposer<TReturns>
   /**
    * Returns the underlying AtomicTransactionComposer instance
    */
