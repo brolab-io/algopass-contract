@@ -8,11 +8,15 @@ from beaker.lib.storage import BoxMapping
 
 byte32 = pt.abi.StaticArray[pt.abi.Byte, Literal[32]]
 
+class UserUrl(pt.abi.NamedTuple):
+    label: pt.abi.Field[pt.abi.String]
+    url: pt.abi.Field[pt.abi.String]
 
 class UserRecord(pt.abi.NamedTuple):
     name: pt.abi.Field[pt.abi.String]
     bio: pt.abi.Field[pt.abi.String]
     uri: pt.abi.Field[pt.abi.String]
+    urls: pt.abi.Field[pt.abi.DynamicArray[UserUrl]]
 
 
 class AppState:
@@ -67,14 +71,14 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
 
 @app.external
 def update_profile(
-    name: pt.abi.String, bio: pt.abi.String, uri: pt.abi.String, *, output: UserRecord
+    name: pt.abi.String, bio: pt.abi.String, uri: pt.abi.String, urls: pt.abi.DynamicArray[UserUrl], *, output: UserRecord
 ) -> pt.Expr:
     return pt.Seq(
         pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
         pt.Assert(pt.Len(name.get()) <= MAX_NAME_LEN),
         pt.Assert(pt.Len(bio.get()) <= MAX_BIO_LEN),
         (cur_p := UserRecord()).decode(state.b_info[pt.Txn.sender()].get()),
-        cur_p.set(name, bio, uri),
+        cur_p.set(name, bio, uri, urls),
         state.b_info[pt.Txn.sender()].set(cur_p),
         output.decode(cur_p.encode()),
     )

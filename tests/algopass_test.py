@@ -80,12 +80,14 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
         name="Leo Pham",
         bio="Leo Pham is a blockchain developer",
         uri="ipfs://xx.y/metadata.json",
+        urls=[("fb", "hongthaipro"), ("tx", "leopham_it")]
     )
 
     assert result.return_value == [
         "Leo Pham",
         "Leo Pham is a blockchain developer",
         "ipfs://xx.y/metadata.json",
+        [["fb", "hongthaipro"],["tx", "leopham_it"]]
     ]
 
 
