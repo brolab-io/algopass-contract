@@ -33,12 +33,14 @@ def algopass_client(
         # template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
     client.create()
-    ensure_funded(algod_client, EnsureBalanceParameters(
-        account_to_fund=client.app_address,
-        funding_source=get_localnet_default_account(algod_client),
-        min_spending_balance_micro_algos=2000000,
-        min_funding_increment_micro_algos=2000000
-    )
+    ensure_funded(
+        algod_client,
+        EnsureBalanceParameters(
+            account_to_fund=client.app_address,
+            funding_source=get_localnet_default_account(algod_client),
+            min_spending_balance_micro_algos=2000000,
+            min_funding_increment_micro_algos=2000000,
+        ),
     )
 
     return client
@@ -61,10 +63,8 @@ def test_init_profile(algopass_client: ApplicationClient) -> None:
 
     result = algopass_client.call(
         algopass_contract.init_profile,
-        transaction_parameters=OnCompleteCallParametersDict(
-            boxes=boxes
-        ),
-        payment=pay_txn
+        transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
+        payment=pay_txn,
     )
     g_counter = algopass_client.get_global_state().get("g_counter")
     assert g_counter == 1
@@ -76,25 +76,12 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
     boxes = [(algopass_client.app_id, decode_address(acct.address))]
     result = algopass_client.call(
         algopass_contract.update_profile,
-        transaction_parameters=OnCompleteCallParametersDict(
-            boxes=boxes
-        ),
+        transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
         name="Leo Pham",
-        bio="Leo Pham is a blockchain developer"
+        bio="Leo Pham is a blockchain developer",
     )
 
-    assert result.return_value == ["Leo Pham",
-                                   "Leo Pham is a blockchain developer"]
-
-    # try:
-    #     algopass_client.call(
-    #         algopass_contract.init_profile,
-    #         transaction_parameters=OnCompleteCallParametersDict (
-    #             boxes=boxes
-    #         ),
-    #     )
-    # except:
-    #     print("Task failed successfully")
+    assert result.return_value == ["Leo Pham", "Leo Pham is a blockchain developer"]
 
 
 def test_says_hello(algopass_client: ApplicationClient) -> None:

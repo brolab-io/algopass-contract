@@ -12,14 +12,12 @@ class UserRecord(pt.abi.NamedTuple):
 
 class AppState:
     g_counter = beaker.GlobalStateValue(
-        stack_type=pt.TealType.uint64,
-        default=pt.Int(0),
-        descr="For user counter"
+        stack_type=pt.TealType.uint64, default=pt.Int(0), descr="For user counter"
     )
     g_fee = beaker.GlobalStateValue(
         stack_type=pt.TealType.uint64,
         default=pt.Int(1000000),
-        descr="Fee to create profile"
+        descr="Fee to create profile",
     )
     b_info = BoxMapping(
         key_type=pt.abi.Address,
@@ -30,9 +28,8 @@ class AppState:
 
 state = AppState()
 
-app = (
-    beaker.Application("algopass", state=state)
-    .apply(beaker.unconditional_create_approval, initialize_global_state=True)
+app = beaker.Application("algopass", state=state).apply(
+    beaker.unconditional_create_approval, initialize_global_state=True
 )
 
 
@@ -55,25 +52,22 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
         (bio := pt.abi.String()).set(pt.Bytes("bio")),
         (temp := UserRecord()).set(name, bio),
         state.b_info[pt.Txn.sender()].set(temp),
-        output.set(pt.Int(1))
+        output.set(pt.Int(1)),
     )
 
 
 @app.external
-def update_profile(name: pt.abi.String, bio: pt.abi.String,
-                   *, output: UserRecord) -> pt.Expr:
+def update_profile(
+    name: pt.abi.String, bio: pt.abi.String, *, output: UserRecord
+) -> pt.Expr:
     return pt.Seq(
-        pt.Assert(
-            state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"
-        ),
-        (cur_p := UserRecord()).decode(
-            state.b_info[pt.Txn.sender()].get()
-        ),
+        pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
+        (cur_p := UserRecord()).decode(state.b_info[pt.Txn.sender()].get()),
         # (name := pt.abi.String()).set(pt.Bytes("name")),
         # (bio := pt.abi.String()).set(pt.Bytes("bio")),
         cur_p.set(name, bio),
         state.b_info[pt.Txn.sender()].set(cur_p),
-        output.decode(cur_p.encode())
+        output.decode(cur_p.encode()),
     )
 
 
