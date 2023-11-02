@@ -27,7 +27,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub hellocaster_6
+callsub hellocaster_8
 intc_1 // 1
 return
 main_l6:
@@ -39,7 +39,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updateprofilecaster_5
+callsub updateprofilecaster_7
 intc_1 // 1
 return
 main_l7:
@@ -51,16 +51,40 @@ intc_0 // 0
 !=
 &&
 assert
-callsub initprofilecaster_4
+callsub initprofilecaster_6
 intc_1 // 1
 return
 main_l8:
 txn OnCompletion
 intc_0 // NoOp
 ==
-bnz main_l10
+bnz main_l14
+txn OnCompletion
+intc_2 // UpdateApplication
+==
+bnz main_l13
+txn OnCompletion
+pushint 5 // DeleteApplication
+==
+bnz main_l12
 err
-main_l10:
+main_l12:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub delete_4
+intc_1 // 1
+return
+main_l13:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub update_3
+intc_1 // 1
+return
+main_l14:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -99,10 +123,14 @@ load 1
 // Initialized
 assert
 frame_dig -1
+gtxns Sender
+txn Sender
+==
+assert
+frame_dig -1
 gtxns Receiver
 global CurrentApplicationAddress
 ==
-// Wrong receiver
 assert
 frame_dig -1
 gtxns Amount
@@ -247,8 +275,34 @@ frame_dig 1
 frame_bury 0
 retsub
 
+// update
+update_3:
+proto 0 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+pushint TMPL_UPDATABLE // TMPL_UPDATABLE
+// Check app is updatable
+assert
+retsub
+
+// delete
+delete_4:
+proto 0 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+pushint TMPL_DELETABLE // TMPL_DELETABLE
+// Check app is deletable
+assert
+retsub
+
 // hello
-hello_3:
+hello_5:
 proto 1 1
 bytec_0 // ""
 pushbytes 0x48656c6c6f2c20 // "Hello, "
@@ -266,7 +320,7 @@ frame_bury 0
 retsub
 
 // init_profile_caster
-initprofilecaster_4:
+initprofilecaster_6:
 proto 0 0
 intc_0 // 0
 dup
@@ -292,7 +346,7 @@ log
 retsub
 
 // update_profile_caster
-updateprofilecaster_5:
+updateprofilecaster_7:
 proto 0 0
 bytec_0 // ""
 dupn 2
@@ -311,14 +365,14 @@ log
 retsub
 
 // hello_caster
-hellocaster_6:
+hellocaster_8:
 proto 0 0
 bytec_0 // ""
 dup
 txna ApplicationArgs 1
 frame_bury 1
 frame_dig 1
-callsub hello_3
+callsub hello_5
 frame_bury 0
 bytec_2 // 0x151f7c75
 frame_dig 0

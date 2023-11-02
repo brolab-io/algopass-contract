@@ -30,7 +30,7 @@ def algopass_client(
         algod_client,
         app_spec=algopass_app_spec,
         signer=get_localnet_default_account(algod_client),
-        # template_values={"UPDATABLE": 1, "DELETABLE": 1},
+        template_values={"UPDATABLE": 1, "DELETABLE": 1},
     )
     client.create()
     ensure_funded(

@@ -1,7 +1,6 @@
 import beaker
 import pyteal as pt
-
-# from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
+from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
 from beaker.lib.storage import BoxMapping
 
 
@@ -39,9 +38,9 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
         pt.Assert(
             pt.Not(state.b_info[pt.Txn.sender()].exists()), comment="Initialized"
         ),
+        pt.Assert(pt.Txn.sender() == payment.get().sender()),
         pt.Assert(
             payment.get().receiver() == pt.Global.current_application_address(),
-            comment="Wrong receiver",
         ),
         pt.Assert(
             payment.get().amount() == state.g_fee.get(),
@@ -71,20 +70,20 @@ def update_profile(
     )
 
 
-# @app.update(authorize=beaker.Authorize.only_creator(), bare=True)
-# def update() -> pt.Expr:
-#     return pt.Assert(
-#         pt.Tmpl.Int(UPDATABLE_TEMPLATE_NAME),
-#         comment="Check app is updatable",
-#     )
+@app.update(authorize=beaker.Authorize.only_creator(), bare=True)
+def update() -> pt.Expr:
+    return pt.Assert(
+        pt.Tmpl.Int(UPDATABLE_TEMPLATE_NAME),
+        comment="Check app is updatable",
+    )
 
 
-# @app.delete(authorize=beaker.Authorize.only_creator(), bare=True)
-# def delete() -> pt.Expr:
-#     return pt.Assert(
-#         pt.Tmpl.Int(DELETABLE_TEMPLATE_NAME),
-#         comment="Check app is deletable",
-#     )
+@app.delete(authorize=beaker.Authorize.only_creator(), bare=True)
+def delete() -> pt.Expr:
+    return pt.Assert(
+        pt.Tmpl.Int(DELETABLE_TEMPLATE_NAME),
+        comment="Check app is deletable",
+    )
 
 
 @app.external
