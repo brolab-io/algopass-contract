@@ -65,6 +65,7 @@ def test_init_profile(algopass_client: ApplicationClient) -> None:
         algopass_contract.init_profile,
         transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
         payment=pay_txn,
+        urls=[("email", "")],
     )
     g_counter = algopass_client.get_global_state().get("g_counter")
     assert g_counter == 1
@@ -80,13 +81,57 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
         name="Leo Pham",
         bio="Leo Pham is a blockchain developer",
         uri="ipfs://xx.y/metadata.json",
+        urls=[
+            ("fb", "hongthaipro"),
+            ("tx", "leopham_it"),
+            ("email", "hongthaipro@gmail.com"),
+        ],
     )
-
     assert result.return_value == [
         "Leo Pham",
         "Leo Pham is a blockchain developer",
         "ipfs://xx.y/metadata.json",
+        [
+            ["fb", "hongthaipro"],
+            ["tx", "leopham_it"],
+            ["email", "hongthaipro@gmail.com"],
+        ],
     ]
+
+
+def test_get_profile(algopass_client: ApplicationClient) -> None:
+    acct = get_localnet_default_account(algopass_client.algod_client)
+    boxes = [(algopass_client.app_id, decode_address(acct.address))]
+    result = algopass_client.call(
+        algopass_contract.get_profile,
+        transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
+        user=decode_address(acct.address),
+    )
+    print(result.return_value)
+
+
+# def test_encode() -> None:
+#     # generate a codec from the string representation of the ABI type
+#     # in this case, a tuple of two strings
+#     codec = abi.ABIType.from_string("(string,string)[]")
+
+#     # encode the value to its ABI encoding with the codec
+#     to_encode = [["hello", "world"], ["bonjour", "le monde"]]
+#     encoded = codec.encode(to_encode)
+#     print(encoded.hex())
+
+#     # decode the value from its ABI encoding with the codec
+#     decoded = codec.decode(encoded)
+#     print(decoded)  # prints ["hello", "world"]
+
+#     # generate a codec for a uint64 array
+#     uint_array_codec = abi.ABIType.from_string("uint64[]")
+#     uint_array = [1, 2, 3, 4, 5]
+#     encoded_array = uint_array_codec.encode(uint_array)
+#     print(encoded_array.hex())
+
+#     decoded_array = uint_array_codec.decode(encoded_array)
+#     print(decoded_array)  # prints [1, 2, 3, 4, 5]
 
 
 def test_says_hello(algopass_client: ApplicationClient) -> None:

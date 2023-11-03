@@ -7,6 +7,10 @@
                 {
                     "type": "pay",
                     "name": "payment"
+                },
+                {
+                    "type": "(string,string)[]",
+                    "name": "urls"
                 }
             ],
             "returns": {
@@ -27,10 +31,26 @@
                 {
                     "type": "string",
                     "name": "uri"
+                },
+                {
+                    "type": "(string,string)[]",
+                    "name": "urls"
                 }
             ],
             "returns": {
-                "type": "(string,string,string)"
+                "type": "(string,string,string,(string,string)[])"
+            }
+        },
+        {
+            "name": "get_profile",
+            "args": [
+                {
+                    "type": "address",
+                    "name": "user"
+                }
+            ],
+            "returns": {
+                "type": "(string,string,string,(string,string)[])"
             }
         },
         {

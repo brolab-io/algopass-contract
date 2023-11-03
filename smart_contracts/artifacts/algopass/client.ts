@@ -27,12 +27,12 @@ import type { TransactionWithSigner } from 'algosdk'
 import { Algodv2, OnApplicationComplete, Transaction, AtomicTransactionComposer } from 'algosdk'
 export const APP_SPEC: AppSpec = {
   "hints": {
-    "init_profile(pay)bool": {
+    "init_profile(pay,(string,string)[])bool": {
       "call_config": {
         "no_op": "CALL"
       }
     },
-    "update_profile(string,string,string)(string,string,string)": {
+    "update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])": {
       "structs": {
         "output": {
           "name": "UserRecord",
@@ -48,6 +48,38 @@ export const APP_SPEC: AppSpec = {
             [
               "uri",
               "string"
+            ],
+            [
+              "urls",
+              "(string,string)[]"
+            ]
+          ]
+        }
+      },
+      "call_config": {
+        "no_op": "CALL"
+      }
+    },
+    "get_profile(address)(string,string,string,(string,string)[])": {
+      "structs": {
+        "output": {
+          "name": "UserRecord",
+          "elements": [
+            [
+              "name",
+              "string"
+            ],
+            [
+              "bio",
+              "string"
+            ],
+            [
+              "uri",
+              "string"
+            ],
+            [
+              "urls",
+              "(string,string)[]"
             ]
           ]
         }
@@ -68,7 +100,7 @@ export const APP_SPEC: AppSpec = {
     }
   },
   "source": {
-    "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA2NTUzNiA2CmJ5dGVjYmxvY2sgMHggMHg2NzVmNjM2Zjc1NmU3NDY1NzIgMHg2NzVmNjY2NTY1IDB4MTUxZjdjNzUKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDEwCnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4M2M2ZjEwNDkgLy8gImluaXRfcHJvZmlsZShwYXkpYm9vbCIKPT0KYm56IG1haW5fbDkKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHhjYTJkOTIxZCAvLyAidXBkYXRlX3Byb2ZpbGUoc3RyaW5nLHN0cmluZyxzdHJpbmcpKHN0cmluZyxzdHJpbmcsc3RyaW5nKSIKPT0KYm56IG1haW5fbDgKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHg1NzFiZjcwYSAvLyAidXBkYXRlX2ZlZSh1aW50NjQpdm9pZCIKPT0KYm56IG1haW5fbDcKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMApwdXNoYnl0ZXMgMHgwMmJlY2UxMSAvLyAiaGVsbG8oc3RyaW5nKXN0cmluZyIKPT0KYm56IG1haW5fbDYKZXJyCm1haW5fbDY6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgaGVsbG9jYXN0ZXJfMTAKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDc6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgdXBkYXRlZmVlY2FzdGVyXzkKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDg6CnR4biBPbkNvbXBsZXRpb24KaW50Y18wIC8vIE5vT3AKPT0KdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KJiYKYXNzZXJ0CmNhbGxzdWIgdXBkYXRlcHJvZmlsZWNhc3Rlcl84CmludGNfMSAvLyAxCnJldHVybgptYWluX2w5Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGluaXRwcm9maWxlY2FzdGVyXzcKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEwOgp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wxNgp0eG4gT25Db21wbGV0aW9uCnB1c2hpbnQgNCAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sMTUKdHhuIE9uQ29tcGxldGlvbgpwdXNoaW50IDUgLy8gRGVsZXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDE0CmVycgptYWluX2wxNDoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzUKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDE1Ogp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiB1cGRhdGVfNAppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sMTY6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCj09CmFzc2VydApjYWxsc3ViIGNyZWF0ZV8wCmludGNfMSAvLyAxCnJldHVybgoKLy8gY3JlYXRlCmNyZWF0ZV8wOgpwcm90byAwIDAKYnl0ZWNfMSAvLyAiZ19jb3VudGVyIgppbnRjXzAgLy8gMAphcHBfZ2xvYmFsX3B1dApieXRlY18yIC8vICJnX2ZlZSIKcHVzaGludCAxMDAwMDAwIC8vIDEwMDAwMDAKYXBwX2dsb2JhbF9wdXQKcmV0c3ViCgovLyBpbml0X3Byb2ZpbGUKaW5pdHByb2ZpbGVfMToKcHJvdG8gMSAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKZHVwbiAzCmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG4gU2VuZGVyCmJveF9sZW4Kc3RvcmUgMQpzdG9yZSAwCmxvYWQgMQohCi8vIEluaXRpYWxpemVkCmFzc2VydApmcmFtZV9kaWcgLTEKZ3R4bnMgU2VuZGVyCnR4biBTZW5kZXIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMQpndHhucyBSZWNlaXZlcgpnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwo9PQphc3NlcnQKZnJhbWVfZGlnIC0xCmd0eG5zIEFtb3VudApieXRlY18yIC8vICJnX2ZlZSIKYXBwX2dsb2JhbF9nZXQKPT0KLy8gcGF5bWVudCBtdXN0IGJlIGZvciA+PSAoYXBwX2dsb2JhbF9nZXQgKHV0ZjggYnl0ZXM6ICJnX2ZlZSIpKQphc3NlcnQKYnl0ZWNfMSAvLyAiZ19jb3VudGVyIgpieXRlY18xIC8vICJnX2NvdW50ZXIiCmFwcF9nbG9iYWxfZ2V0CmludGNfMSAvLyAxCisKYXBwX2dsb2JhbF9wdXQKcHVzaGJ5dGVzIDB4NmU2MTZkNjUgLy8gIm5hbWUiCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpsZW4KaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMQpjb25jYXQKZnJhbWVfYnVyeSAxCnB1c2hieXRlcyAweDYyNjk2ZiAvLyAiYmlvIgpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDIKY29uY2F0CmZyYW1lX2J1cnkgMgpwdXNoYnl0ZXMgMHg2OTcwNjY3MzNhMmYyZiAvLyAiaXBmczovLyIKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAzCmNvbmNhdApmcmFtZV9idXJ5IDMKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSA4CmZyYW1lX2RpZyA4CmZyYW1lX2J1cnkgNwppbnRjXzMgLy8gNgpmcmFtZV9idXJ5IDUKZnJhbWVfZGlnIDUKZnJhbWVfZGlnIDgKbGVuCisKZnJhbWVfYnVyeSA2CmZyYW1lX2RpZyA2CmludGNfMiAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgNQppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmZyYW1lX2J1cnkgOApmcmFtZV9kaWcgNwpmcmFtZV9kaWcgOApjb25jYXQKZnJhbWVfYnVyeSA3CmZyYW1lX2RpZyA2CmZyYW1lX2J1cnkgNQpmcmFtZV9kaWcgNQpmcmFtZV9kaWcgOApsZW4KKwpmcmFtZV9idXJ5IDYKZnJhbWVfZGlnIDYKaW50Y18yIC8vIDY1NTM2CjwKYXNzZXJ0CmZyYW1lX2RpZyA1Cml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyAzCmZyYW1lX2J1cnkgOApmcmFtZV9kaWcgNwpmcmFtZV9kaWcgOApjb25jYXQKZnJhbWVfYnVyeSA3CmZyYW1lX2RpZyA2CmZyYW1lX2J1cnkgNQpmcmFtZV9kaWcgNQppdG9iCmV4dHJhY3QgNiAwCmNvbmNhdApmcmFtZV9kaWcgNwpjb25jYXQKZnJhbWVfYnVyeSA0CnR4biBTZW5kZXIKYm94X2RlbApwb3AKdHhuIFNlbmRlcgpmcmFtZV9kaWcgNApib3hfcHV0CmludGNfMSAvLyAxCiEKIQpmcmFtZV9idXJ5IDAKcmV0c3ViCgovLyB1cGRhdGVfcHJvZmlsZQp1cGRhdGVwcm9maWxlXzI6CnByb3RvIDMgMQpieXRlY18wIC8vICIiCmR1cAppbnRjXzAgLy8gMApkdXAKYnl0ZWNfMCAvLyAiIgpkdXAKdHhuIFNlbmRlcgpib3hfbGVuCnN0b3JlIDMKc3RvcmUgMgpsb2FkIDMKLy8gTm90IEV4aXN0CmFzc2VydApmcmFtZV9kaWcgLTMKZXh0cmFjdCAyIDAKbGVuCnB1c2hpbnQgMjAgLy8gMjAKPD0KYXNzZXJ0CmZyYW1lX2RpZyAtMgpleHRyYWN0IDIgMApsZW4KcHVzaGludCAyMDAgLy8gMjAwCjw9CmFzc2VydAp0eG4gU2VuZGVyCmJveF9nZXQKc3RvcmUgNQpzdG9yZSA0CmxvYWQgNQphc3NlcnQKbG9hZCA0CmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgLTMKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA1CmZyYW1lX2J1cnkgNAppbnRjXzMgLy8gNgpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDUKbGVuCisKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmludGNfMiAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgMgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAtMgpmcmFtZV9idXJ5IDUKZnJhbWVfZGlnIDQKZnJhbWVfZGlnIDUKY29uY2F0CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgMwpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDUKbGVuCisKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmludGNfMiAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgMgppdG9iCmV4dHJhY3QgNiAwCmNvbmNhdApmcmFtZV9kaWcgLTEKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA0CmZyYW1lX2RpZyA1CmNvbmNhdApmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDMKZnJhbWVfYnVyeSAyCmZyYW1lX2RpZyAyCml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyA0CmNvbmNhdApmcmFtZV9idXJ5IDEKdHhuIFNlbmRlcgpib3hfZGVsCnBvcAp0eG4gU2VuZGVyCmZyYW1lX2RpZyAxCmJveF9wdXQKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gdXBkYXRlX2ZlZQp1cGRhdGVmZWVfMzoKcHJvdG8gMSAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKYnl0ZWNfMiAvLyAiZ19mZWUiCmZyYW1lX2RpZyAtMQphcHBfZ2xvYmFsX3B1dApyZXRzdWIKCi8vIHVwZGF0ZQp1cGRhdGVfNDoKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX1VQREFUQUJMRSAvLyBUTVBMX1VQREFUQUJMRQovLyBDaGVjayBhcHAgaXMgdXBkYXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGRlbGV0ZQpkZWxldGVfNToKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX0RFTEVUQUJMRSAvLyBUTVBMX0RFTEVUQUJMRQovLyBDaGVjayBhcHAgaXMgZGVsZXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGhlbGxvCmhlbGxvXzY6CnByb3RvIDEgMQpieXRlY18wIC8vICIiCnB1c2hieXRlcyAweDQ4NjU2YzZjNmYyYzIwIC8vICJIZWxsbywgIgpmcmFtZV9kaWcgLTEKZXh0cmFjdCAyIDAKY29uY2F0CmZyYW1lX2J1cnkgMApmcmFtZV9kaWcgMApsZW4KaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMApjb25jYXQKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gaW5pdF9wcm9maWxlX2Nhc3Rlcgppbml0cHJvZmlsZWNhc3Rlcl83Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwCnR4biBHcm91cEluZGV4CmludGNfMSAvLyAxCi0KZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmd0eG5zIFR5cGVFbnVtCmludGNfMSAvLyBwYXkKPT0KYXNzZXJ0CmZyYW1lX2RpZyAxCmNhbGxzdWIgaW5pdHByb2ZpbGVfMQpmcmFtZV9idXJ5IDAKYnl0ZWNfMyAvLyAweDE1MWY3Yzc1CnB1c2hieXRlcyAweDAwIC8vIDB4MDAKaW50Y18wIC8vIDAKZnJhbWVfZGlnIDAKc2V0Yml0CmNvbmNhdApsb2cKcmV0c3ViCgovLyB1cGRhdGVfcHJvZmlsZV9jYXN0ZXIKdXBkYXRlcHJvZmlsZWNhc3Rlcl84Ogpwcm90byAwIDAKYnl0ZWNfMCAvLyAiIgpkdXBuIDMKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQpmcmFtZV9idXJ5IDEKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgpmcmFtZV9idXJ5IDIKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMwpmcmFtZV9idXJ5IDMKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIDIKZnJhbWVfZGlnIDMKY2FsbHN1YiB1cGRhdGVwcm9maWxlXzIKZnJhbWVfYnVyeSAwCmJ5dGVjXzMgLy8gMHgxNTFmN2M3NQpmcmFtZV9kaWcgMApjb25jYXQKbG9nCnJldHN1YgoKLy8gdXBkYXRlX2ZlZV9jYXN0ZXIKdXBkYXRlZmVlY2FzdGVyXzk6CnByb3RvIDAgMAppbnRjXzAgLy8gMAp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmJ0b2kKZnJhbWVfYnVyeSAwCmZyYW1lX2RpZyAwCmNhbGxzdWIgdXBkYXRlZmVlXzMKcmV0c3ViCgovLyBoZWxsb19jYXN0ZXIKaGVsbG9jYXN0ZXJfMTA6CnByb3RvIDAgMApieXRlY18wIC8vICIiCmR1cAp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpjYWxsc3ViIGhlbGxvXzYKZnJhbWVfYnVyeSAwCmJ5dGVjXzMgLy8gMHgxNTFmN2M3NQpmcmFtZV9kaWcgMApjb25jYXQKbG9nCnJldHN1Yg==",
+    "approval": "I3ByYWdtYSB2ZXJzaW9uIDgKaW50Y2Jsb2NrIDAgMSA2NTUzNiA4CmJ5dGVjYmxvY2sgMHggMHgxNTFmN2M3NSAweDY3NWY2MzZmNzU2ZTc0NjU3MiAweDY3NWY2NjY1NjUKdHhuIE51bUFwcEFyZ3MKaW50Y18wIC8vIDAKPT0KYm56IG1haW5fbDEyCnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4MDExZDIxNTcgLy8gImluaXRfcHJvZmlsZShwYXksKHN0cmluZyxzdHJpbmcpW10pYm9vbCIKPT0KYm56IG1haW5fbDExCnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4YjhjZWFiNjEgLy8gInVwZGF0ZV9wcm9maWxlKHN0cmluZyxzdHJpbmcsc3RyaW5nLChzdHJpbmcsc3RyaW5nKVtdKShzdHJpbmcsc3RyaW5nLHN0cmluZywoc3RyaW5nLHN0cmluZylbXSkiCj09CmJueiBtYWluX2wxMAp0eG5hIEFwcGxpY2F0aW9uQXJncyAwCnB1c2hieXRlcyAweDMwNzBiYzM2IC8vICJnZXRfcHJvZmlsZShhZGRyZXNzKShzdHJpbmcsc3RyaW5nLHN0cmluZywoc3RyaW5nLHN0cmluZylbXSkiCj09CmJueiBtYWluX2w5CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4NTcxYmY3MGEgLy8gInVwZGF0ZV9mZWUodWludDY0KXZvaWQiCj09CmJueiBtYWluX2w4CnR4bmEgQXBwbGljYXRpb25BcmdzIDAKcHVzaGJ5dGVzIDB4MDJiZWNlMTEgLy8gImhlbGxvKHN0cmluZylzdHJpbmciCj09CmJueiBtYWluX2w3CmVycgptYWluX2w3Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGhlbGxvY2FzdGVyXzEyCmludGNfMSAvLyAxCnJldHVybgptYWluX2w4Ogp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIHVwZGF0ZWZlZWNhc3Rlcl8xMQppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sOToKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiBnZXRwcm9maWxlY2FzdGVyXzEwCmludGNfMSAvLyAxCnJldHVybgptYWluX2wxMDoKdHhuIE9uQ29tcGxldGlvbgppbnRjXzAgLy8gTm9PcAo9PQp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQomJgphc3NlcnQKY2FsbHN1YiB1cGRhdGVwcm9maWxlY2FzdGVyXzkKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDExOgp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCiE9CiYmCmFzc2VydApjYWxsc3ViIGluaXRwcm9maWxlY2FzdGVyXzgKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDEyOgp0eG4gT25Db21wbGV0aW9uCmludGNfMCAvLyBOb09wCj09CmJueiBtYWluX2wxOAp0eG4gT25Db21wbGV0aW9uCnB1c2hpbnQgNCAvLyBVcGRhdGVBcHBsaWNhdGlvbgo9PQpibnogbWFpbl9sMTcKdHhuIE9uQ29tcGxldGlvbgpwdXNoaW50IDUgLy8gRGVsZXRlQXBwbGljYXRpb24KPT0KYm56IG1haW5fbDE2CmVycgptYWluX2wxNjoKdHhuIEFwcGxpY2F0aW9uSUQKaW50Y18wIC8vIDAKIT0KYXNzZXJ0CmNhbGxzdWIgZGVsZXRlXzYKaW50Y18xIC8vIDEKcmV0dXJuCm1haW5fbDE3Ogp0eG4gQXBwbGljYXRpb25JRAppbnRjXzAgLy8gMAohPQphc3NlcnQKY2FsbHN1YiB1cGRhdGVfNQppbnRjXzEgLy8gMQpyZXR1cm4KbWFpbl9sMTg6CnR4biBBcHBsaWNhdGlvbklECmludGNfMCAvLyAwCj09CmFzc2VydApjYWxsc3ViIGNyZWF0ZV8wCmludGNfMSAvLyAxCnJldHVybgoKLy8gY3JlYXRlCmNyZWF0ZV8wOgpwcm90byAwIDAKYnl0ZWNfMiAvLyAiZ19jb3VudGVyIgppbnRjXzAgLy8gMAphcHBfZ2xvYmFsX3B1dApieXRlY18zIC8vICJnX2ZlZSIKcHVzaGludCAxMDAwMDAwIC8vIDEwMDAwMDAKYXBwX2dsb2JhbF9wdXQKcmV0c3ViCgovLyBpbml0X3Byb2ZpbGUKaW5pdHByb2ZpbGVfMToKcHJvdG8gMiAxCmludGNfMCAvLyAwCmJ5dGVjXzAgLy8gIiIKZHVwbiA0CmludGNfMCAvLyAwCmR1cApieXRlY18wIC8vICIiCmR1cAp0eG4gU2VuZGVyCmJveF9sZW4Kc3RvcmUgMQpzdG9yZSAwCmxvYWQgMQohCi8vIEluaXRpYWxpemVkCmFzc2VydApmcmFtZV9kaWcgLTIKZ3R4bnMgU2VuZGVyCnR4biBTZW5kZXIKPT0KYXNzZXJ0CmZyYW1lX2RpZyAtMgpndHhucyBSZWNlaXZlcgpnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwo9PQphc3NlcnQKZnJhbWVfZGlnIC0yCmd0eG5zIEFtb3VudApieXRlY18zIC8vICJnX2ZlZSIKYXBwX2dsb2JhbF9nZXQKPT0KLy8gcGF5bWVudCBtdXN0IGJlIGZvciA+PSAoYXBwX2dsb2JhbF9nZXQgKHV0ZjggYnl0ZXM6ICJnX2ZlZSIpKQphc3NlcnQKYnl0ZWNfMiAvLyAiZ19jb3VudGVyIgpieXRlY18yIC8vICJnX2NvdW50ZXIiCmFwcF9nbG9iYWxfZ2V0CmludGNfMSAvLyAxCisKYXBwX2dsb2JhbF9wdXQKcHVzaGJ5dGVzIDB4NmU2MTZkNjUgLy8gIm5hbWUiCmZyYW1lX2J1cnkgMQpmcmFtZV9kaWcgMQpsZW4KaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMQpjb25jYXQKZnJhbWVfYnVyeSAxCnB1c2hieXRlcyAweDYyNjk2ZiAvLyAiYmlvIgpmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIDIKbGVuCml0b2IKZXh0cmFjdCA2IDAKZnJhbWVfZGlnIDIKY29uY2F0CmZyYW1lX2J1cnkgMgpwdXNoYnl0ZXMgMHg2OTcwNjY3MzNhMmYyZiAvLyAiaXBmczovLyIKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmxlbgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAzCmNvbmNhdApmcmFtZV9idXJ5IDMKZnJhbWVfZGlnIDEKZnJhbWVfYnVyeSA5CmZyYW1lX2RpZyA5CmZyYW1lX2J1cnkgOAppbnRjXzMgLy8gOApmcmFtZV9idXJ5IDYKZnJhbWVfZGlnIDYKZnJhbWVfZGlnIDkKbGVuCisKZnJhbWVfYnVyeSA3CmZyYW1lX2RpZyA3CmludGNfMiAvLyA2NTUzNgo8CmFzc2VydApmcmFtZV9kaWcgNgppdG9iCmV4dHJhY3QgNiAwCmZyYW1lX2RpZyAyCmZyYW1lX2J1cnkgOQpmcmFtZV9kaWcgOApmcmFtZV9kaWcgOQpjb25jYXQKZnJhbWVfYnVyeSA4CmZyYW1lX2RpZyA3CmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNgpmcmFtZV9kaWcgOQpsZW4KKwpmcmFtZV9idXJ5IDcKZnJhbWVfZGlnIDcKaW50Y18yIC8vIDY1NTM2CjwKYXNzZXJ0CmZyYW1lX2RpZyA2Cml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyAzCmZyYW1lX2J1cnkgOQpmcmFtZV9kaWcgOApmcmFtZV9kaWcgOQpjb25jYXQKZnJhbWVfYnVyeSA4CmZyYW1lX2RpZyA3CmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNgpmcmFtZV9kaWcgOQpsZW4KKwpmcmFtZV9idXJ5IDcKZnJhbWVfZGlnIDcKaW50Y18yIC8vIDY1NTM2CjwKYXNzZXJ0CmZyYW1lX2RpZyA2Cml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyAtMQpmcmFtZV9idXJ5IDkKZnJhbWVfZGlnIDgKZnJhbWVfZGlnIDkKY29uY2F0CmZyYW1lX2J1cnkgOApmcmFtZV9kaWcgNwpmcmFtZV9idXJ5IDYKZnJhbWVfZGlnIDYKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIDgKY29uY2F0CmZyYW1lX2J1cnkgNQp0eG4gU2VuZGVyCmJveF9kZWwKcG9wCnR4biBTZW5kZXIKZnJhbWVfZGlnIDUKYm94X3B1dAppbnRjXzEgLy8gMQohCiEKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gdXBkYXRlX3Byb2ZpbGUKdXBkYXRlcHJvZmlsZV8yOgpwcm90byA0IDEKYnl0ZWNfMCAvLyAiIgpkdXBuIDIKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4biBTZW5kZXIKYm94X2xlbgpzdG9yZSAzCnN0b3JlIDIKbG9hZCAzCi8vIE5vdCBFeGlzdAphc3NlcnQKZnJhbWVfZGlnIC00CmV4dHJhY3QgMiAwCmxlbgpwdXNoaW50IDIwIC8vIDIwCjw9CmFzc2VydApmcmFtZV9kaWcgLTMKZXh0cmFjdCAyIDAKbGVuCnB1c2hpbnQgMjAwIC8vIDIwMAo8PQphc3NlcnQKdHhuIFNlbmRlcgpib3hfZ2V0CnN0b3JlIDUKc3RvcmUgNApsb2FkIDUKYXNzZXJ0CmxvYWQgNApmcmFtZV9idXJ5IDIKZnJhbWVfZGlnIC00CmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNgpmcmFtZV9idXJ5IDUKaW50Y18zIC8vIDgKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmZyYW1lX2RpZyA2CmxlbgorCmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgNAppbnRjXzIgLy8gNjU1MzYKPAphc3NlcnQKZnJhbWVfZGlnIDMKaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgLTMKZnJhbWVfYnVyeSA2CmZyYW1lX2RpZyA1CmZyYW1lX2RpZyA2CmNvbmNhdApmcmFtZV9idXJ5IDUKZnJhbWVfZGlnIDQKZnJhbWVfYnVyeSAzCmZyYW1lX2RpZyAzCmZyYW1lX2RpZyA2CmxlbgorCmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgNAppbnRjXzIgLy8gNjU1MzYKPAphc3NlcnQKZnJhbWVfZGlnIDMKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIC0yCmZyYW1lX2J1cnkgNgpmcmFtZV9kaWcgNQpmcmFtZV9kaWcgNgpjb25jYXQKZnJhbWVfYnVyeSA1CmZyYW1lX2RpZyA0CmZyYW1lX2J1cnkgMwpmcmFtZV9kaWcgMwpmcmFtZV9kaWcgNgpsZW4KKwpmcmFtZV9idXJ5IDQKZnJhbWVfZGlnIDQKaW50Y18yIC8vIDY1NTM2CjwKYXNzZXJ0CmZyYW1lX2RpZyAzCml0b2IKZXh0cmFjdCA2IDAKY29uY2F0CmZyYW1lX2RpZyAtMQpmcmFtZV9idXJ5IDYKZnJhbWVfZGlnIDUKZnJhbWVfZGlnIDYKY29uY2F0CmZyYW1lX2J1cnkgNQpmcmFtZV9kaWcgNApmcmFtZV9idXJ5IDMKZnJhbWVfZGlnIDMKaXRvYgpleHRyYWN0IDYgMApjb25jYXQKZnJhbWVfZGlnIDUKY29uY2F0CmZyYW1lX2J1cnkgMgp0eG4gU2VuZGVyCmJveF9kZWwKcG9wCnR4biBTZW5kZXIKZnJhbWVfZGlnIDIKYm94X3B1dAp0eG4gU2VuZGVyCmJveF9nZXQKc3RvcmUgNwpzdG9yZSA2CmxvYWQgNwphc3NlcnQKbG9hZCA2CmZyYW1lX2J1cnkgMApyZXRzdWIKCi8vIGdldF9wcm9maWxlCmdldHByb2ZpbGVfMzoKcHJvdG8gMSAxCmJ5dGVjXzAgLy8gIiIKZnJhbWVfZGlnIC0xCmJveF9sZW4Kc3RvcmUgOQpzdG9yZSA4CmxvYWQgOQovLyBOb3QgRXhpc3QKYXNzZXJ0CmZyYW1lX2RpZyAtMQpib3hfZ2V0CnN0b3JlIDExCnN0b3JlIDEwCmxvYWQgMTEKYXNzZXJ0CmxvYWQgMTAKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gdXBkYXRlX2ZlZQp1cGRhdGVmZWVfNDoKcHJvdG8gMSAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKYnl0ZWNfMyAvLyAiZ19mZWUiCmZyYW1lX2RpZyAtMQphcHBfZ2xvYmFsX3B1dApyZXRzdWIKCi8vIHVwZGF0ZQp1cGRhdGVfNToKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX1VQREFUQUJMRSAvLyBUTVBMX1VQREFUQUJMRQovLyBDaGVjayBhcHAgaXMgdXBkYXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGRlbGV0ZQpkZWxldGVfNjoKcHJvdG8gMCAwCnR4biBTZW5kZXIKZ2xvYmFsIENyZWF0b3JBZGRyZXNzCj09Ci8vIHVuYXV0aG9yaXplZAphc3NlcnQKcHVzaGludCBUTVBMX0RFTEVUQUJMRSAvLyBUTVBMX0RFTEVUQUJMRQovLyBDaGVjayBhcHAgaXMgZGVsZXRhYmxlCmFzc2VydApyZXRzdWIKCi8vIGhlbGxvCmhlbGxvXzc6CnByb3RvIDEgMQpieXRlY18wIC8vICIiCnB1c2hieXRlcyAweDQ4NjU2YzZjNmYyYzIwIC8vICJIZWxsbywgIgpmcmFtZV9kaWcgLTEKZXh0cmFjdCAyIDAKY29uY2F0CmZyYW1lX2J1cnkgMApmcmFtZV9kaWcgMApsZW4KaXRvYgpleHRyYWN0IDYgMApmcmFtZV9kaWcgMApjb25jYXQKZnJhbWVfYnVyeSAwCnJldHN1YgoKLy8gaW5pdF9wcm9maWxlX2Nhc3Rlcgppbml0cHJvZmlsZWNhc3Rlcl84Ogpwcm90byAwIDAKaW50Y18wIC8vIDAKZHVwCmJ5dGVjXzAgLy8gIiIKdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQpmcmFtZV9idXJ5IDIKdHhuIEdyb3VwSW5kZXgKaW50Y18xIC8vIDEKLQpmcmFtZV9idXJ5IDEKZnJhbWVfZGlnIDEKZ3R4bnMgVHlwZUVudW0KaW50Y18xIC8vIHBheQo9PQphc3NlcnQKZnJhbWVfZGlnIDEKZnJhbWVfZGlnIDIKY2FsbHN1YiBpbml0cHJvZmlsZV8xCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKcHVzaGJ5dGVzIDB4MDAgLy8gMHgwMAppbnRjXzAgLy8gMApmcmFtZV9kaWcgMApzZXRiaXQKY29uY2F0CmxvZwpyZXRzdWIKCi8vIHVwZGF0ZV9wcm9maWxlX2Nhc3Rlcgp1cGRhdGVwcm9maWxlY2FzdGVyXzk6CnByb3RvIDAgMApieXRlY18wIC8vICIiCmR1cG4gNAp0eG5hIEFwcGxpY2F0aW9uQXJncyAxCmZyYW1lX2J1cnkgMQp0eG5hIEFwcGxpY2F0aW9uQXJncyAyCmZyYW1lX2J1cnkgMgp0eG5hIEFwcGxpY2F0aW9uQXJncyAzCmZyYW1lX2J1cnkgMwp0eG5hIEFwcGxpY2F0aW9uQXJncyA0CmZyYW1lX2J1cnkgNApmcmFtZV9kaWcgMQpmcmFtZV9kaWcgMgpmcmFtZV9kaWcgMwpmcmFtZV9kaWcgNApjYWxsc3ViIHVwZGF0ZXByb2ZpbGVfMgpmcmFtZV9idXJ5IDAKYnl0ZWNfMSAvLyAweDE1MWY3Yzc1CmZyYW1lX2RpZyAwCmNvbmNhdApsb2cKcmV0c3ViCgovLyBnZXRfcHJvZmlsZV9jYXN0ZXIKZ2V0cHJvZmlsZWNhc3Rlcl8xMDoKcHJvdG8gMCAwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmNhbGxzdWIgZ2V0cHJvZmlsZV8zCmZyYW1lX2J1cnkgMApieXRlY18xIC8vIDB4MTUxZjdjNzUKZnJhbWVfZGlnIDAKY29uY2F0CmxvZwpyZXRzdWIKCi8vIHVwZGF0ZV9mZWVfY2FzdGVyCnVwZGF0ZWZlZWNhc3Rlcl8xMToKcHJvdG8gMCAwCmludGNfMCAvLyAwCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKYnRvaQpmcmFtZV9idXJ5IDAKZnJhbWVfZGlnIDAKY2FsbHN1YiB1cGRhdGVmZWVfNApyZXRzdWIKCi8vIGhlbGxvX2Nhc3RlcgpoZWxsb2Nhc3Rlcl8xMjoKcHJvdG8gMCAwCmJ5dGVjXzAgLy8gIiIKZHVwCnR4bmEgQXBwbGljYXRpb25BcmdzIDEKZnJhbWVfYnVyeSAxCmZyYW1lX2RpZyAxCmNhbGxzdWIgaGVsbG9fNwpmcmFtZV9idXJ5IDAKYnl0ZWNfMSAvLyAweDE1MWY3Yzc1CmZyYW1lX2RpZyAwCmNvbmNhdApsb2cKcmV0c3Vi",
     "clear": "I3ByYWdtYSB2ZXJzaW9uIDgKcHVzaGludCAwIC8vIDAKcmV0dXJu"
   },
   "state": {
@@ -111,6 +143,10 @@ export const APP_SPEC: AppSpec = {
           {
             "type": "pay",
             "name": "payment"
+          },
+          {
+            "type": "(string,string)[]",
+            "name": "urls"
           }
         ],
         "returns": {
@@ -131,10 +167,26 @@ export const APP_SPEC: AppSpec = {
           {
             "type": "string",
             "name": "uri"
+          },
+          {
+            "type": "(string,string)[]",
+            "name": "urls"
           }
         ],
         "returns": {
-          "type": "(string,string,string)"
+          "type": "(string,string,string,(string,string)[])"
+        }
+      },
+      {
+        "name": "get_profile",
+        "args": [
+          {
+            "type": "address",
+            "name": "user"
+          }
+        ],
+        "returns": {
+          "type": "(string,string,string,(string,string)[])"
         }
       },
       {
@@ -226,20 +278,29 @@ export type Algopass = {
    * Maps method signatures / names to their argument and return types.
    */
   methods:
-    & Record<'init_profile(pay)bool' | 'init_profile', {
+    & Record<'init_profile(pay,(string,string)[])bool' | 'init_profile', {
       argsObj: {
         payment: TransactionToSign | Transaction | Promise<SendTransactionResult>
+        urls: [string, string][]
       }
-      argsTuple: [payment: TransactionToSign | Transaction | Promise<SendTransactionResult>]
+      argsTuple: [payment: TransactionToSign | Transaction | Promise<SendTransactionResult>, urls: [string, string][]]
       returns: boolean
     }>
-    & Record<'update_profile(string,string,string)(string,string,string)' | 'update_profile', {
+    & Record<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])' | 'update_profile', {
       argsObj: {
         name: string
         bio: string
         uri: string
+        urls: [string, string][]
       }
-      argsTuple: [name: string, bio: string, uri: string]
+      argsTuple: [name: string, bio: string, uri: string, urls: [string, string][]]
+      returns: UserRecord
+    }>
+    & Record<'get_profile(address)(string,string,string,(string,string)[])' | 'get_profile', {
+      argsObj: {
+        user: string
+      }
+      argsTuple: [user: string]
       returns: UserRecord
     }>
     & Record<'update_fee(uint64)void' | 'update_fee', {
@@ -294,15 +355,37 @@ export type UserRecord = {
   name: string
   bio: string
   uri: string
+  urls: [string, string][]
 }
 /**
  * Converts the tuple representation of a UserRecord to the struct representation
  */
-export function UserRecord([name, bio, uri]: [string, string, string] ) {
+export function UserRecord([name, bio, uri, urls]: [string, string, string, [string, string][]] ) {
   return {
     name,
     bio,
     uri,
+    urls,
+  }
+}
+/**
+ * Represents a UserRecord result as a struct
+ */
+export type UserRecord = {
+  name: string
+  bio: string
+  uri: string
+  urls: [string, string][]
+}
+/**
+ * Converts the tuple representation of a UserRecord to the struct representation
+ */
+export function UserRecord([name, bio, uri, urls]: [string, string, string, [string, string][]] ) {
+  return {
+    name,
+    bio,
+    uri,
+    urls,
   }
 }
 /**
@@ -429,30 +512,44 @@ export abstract class AlgopassCallFactory {
   }
 
   /**
-   * Constructs a no op call for the init_profile(pay)bool ABI method
+   * Constructs a no op call for the init_profile(pay,(string,string)[])bool ABI method
    *
    * @param args Any args for the contract call
    * @param params Any additional parameters for the call
    * @returns A TypedCallParams object for the call
    */
-  static initProfile(args: MethodArgs<'init_profile(pay)bool'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
+  static initProfile(args: MethodArgs<'init_profile(pay,(string,string)[])bool'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
     return {
-      method: 'init_profile(pay)bool' as const,
-      methodArgs: Array.isArray(args) ? args : [args.payment],
+      method: 'init_profile(pay,(string,string)[])bool' as const,
+      methodArgs: Array.isArray(args) ? args : [args.payment, args.urls],
       ...params,
     }
   }
   /**
-   * Constructs a no op call for the update_profile(string,string,string)(string,string,string) ABI method
+   * Constructs a no op call for the update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[]) ABI method
    *
    * @param args Any args for the contract call
    * @param params Any additional parameters for the call
    * @returns A TypedCallParams object for the call
    */
-  static updateProfile(args: MethodArgs<'update_profile(string,string,string)(string,string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
+  static updateProfile(args: MethodArgs<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
     return {
-      method: 'update_profile(string,string,string)(string,string,string)' as const,
-      methodArgs: Array.isArray(args) ? args : [args.name, args.bio, args.uri],
+      method: 'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])' as const,
+      methodArgs: Array.isArray(args) ? args : [args.name, args.bio, args.uri, args.urls],
+      ...params,
+    }
+  }
+  /**
+   * Constructs a no op call for the get_profile(address)(string,string,string,(string,string)[]) ABI method
+   *
+   * @param args Any args for the contract call
+   * @param params Any additional parameters for the call
+   * @returns A TypedCallParams object for the call
+   */
+  static getProfile(args: MethodArgs<'get_profile(address)(string,string,string,(string,string)[])'>, params: AppClientCallCoreParams & CoreAppCallArgs) {
+    return {
+      method: 'get_profile(address)(string,string,string,(string,string)[])' as const,
+      methodArgs: Array.isArray(args) ? args : [args.user],
       ...params,
     }
   }
@@ -623,25 +720,36 @@ export class AlgopassClient {
   }
 
   /**
-   * Calls the init_profile(pay)bool ABI method.
+   * Calls the init_profile(pay,(string,string)[])bool ABI method.
    *
    * @param args The arguments for the contract call
    * @param params Any additional parameters for the call
    * @returns The result of the call
    */
-  public initProfile(args: MethodArgs<'init_profile(pay)bool'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
+  public initProfile(args: MethodArgs<'init_profile(pay,(string,string)[])bool'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
     return this.call(AlgopassCallFactory.initProfile(args, params))
   }
 
   /**
-   * Calls the update_profile(string,string,string)(string,string,string) ABI method.
+   * Calls the update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[]) ABI method.
    *
    * @param args The arguments for the contract call
    * @param params Any additional parameters for the call
    * @returns The result of the call
    */
-  public updateProfile(args: MethodArgs<'update_profile(string,string,string)(string,string,string)'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
+  public updateProfile(args: MethodArgs<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
     return this.call(AlgopassCallFactory.updateProfile(args, params), UserRecord)
+  }
+
+  /**
+   * Calls the get_profile(address)(string,string,string,(string,string)[]) ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The result of the call
+   */
+  public getProfile(args: MethodArgs<'get_profile(address)(string,string,string,(string,string)[])'>, params: AppClientCallCoreParams & CoreAppCallArgs = {}) {
+    return this.call(AlgopassCallFactory.getProfile(args, params), UserRecord)
   }
 
   /**
@@ -731,13 +839,18 @@ export class AlgopassClient {
     let promiseChain:Promise<unknown> = Promise.resolve()
     const resultMappers: Array<undefined | ((x: any) => any)> = []
     return {
-      initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+      initProfile(args: MethodArgs<'init_profile(pay,(string,string)[])bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
         promiseChain = promiseChain.then(() => client.initProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(undefined)
         return this
       },
-      updateProfile(args: MethodArgs<'update_profile(string,string,string)(string,string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+      updateProfile(args: MethodArgs<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
         promiseChain = promiseChain.then(() => client.updateProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
+        resultMappers.push(UserRecord)
+        return this
+      },
+      getProfile(args: MethodArgs<'get_profile(address)(string,string,string,(string,string)[])'>, params?: AppClientCallCoreParams & CoreAppCallArgs) {
+        promiseChain = promiseChain.then(() => client.getProfile(args, {...params, sendParams: {...params?.sendParams, skipSending: true, atc}}))
         resultMappers.push(UserRecord)
         return this
       },
@@ -797,22 +910,31 @@ export class AlgopassClient {
 }
 export type AlgopassComposer<TReturns extends [...any[]] = []> = {
   /**
-   * Calls the init_profile(pay)bool ABI method.
+   * Calls the init_profile(pay,(string,string)[])bool ABI method.
    *
    * @param args The arguments for the contract call
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  initProfile(args: MethodArgs<'init_profile(pay)bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'init_profile(pay)bool'>]>
+  initProfile(args: MethodArgs<'init_profile(pay,(string,string)[])bool'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'init_profile(pay,(string,string)[])bool'>]>
 
   /**
-   * Calls the update_profile(string,string,string)(string,string,string) ABI method.
+   * Calls the update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[]) ABI method.
    *
    * @param args The arguments for the contract call
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  updateProfile(args: MethodArgs<'update_profile(string,string,string)(string,string,string)'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'update_profile(string,string,string)(string,string,string)'>]>
+  updateProfile(args: MethodArgs<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])'>]>
+
+  /**
+   * Calls the get_profile(address)(string,string,string,(string,string)[]) ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
+   */
+  getProfile(args: MethodArgs<'get_profile(address)(string,string,string,(string,string)[])'>, params?: AppClientCallCoreParams & CoreAppCallArgs): AlgopassComposer<[...TReturns, MethodReturn<'get_profile(address)(string,string,string,(string,string)[])'>]>
 
   /**
    * Calls the update_fee(uint64)void ABI method.
