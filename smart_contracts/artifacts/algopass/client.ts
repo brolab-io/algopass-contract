@@ -61,6 +61,7 @@ export const APP_SPEC: AppSpec = {
       }
     },
     "get_profile(address)(string,string,string,(string,string)[])": {
+      "read_only": true,
       "structs": {
         "output": {
           "name": "UserRecord",

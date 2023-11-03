@@ -70,14 +70,6 @@ def init_profile(
         (name := pt.abi.String()).set(pt.Bytes("name")),
         (bio := pt.abi.String()).set(pt.Bytes("bio")),
         (uri := pt.abi.String()).set(pt.Bytes("ipfs://")),
-        # (urls := pt.abi.DynamicArray[UserUrl]).set(
-        #     pt.Concat(
-        #         pt.Bytes("fb"),
-        #         pt.Bytes("hongthaipro"),
-        #         pt.Bytes("tx"),
-        #         pt.Bytes("leopham_it"),
-        #     )
-        # ),
         (temp := UserRecord()).set(name, bio, uri, urls),
         state.b_info[pt.Txn.sender()].set(temp),
         output.set(pt.Int(1)),
@@ -105,7 +97,7 @@ def update_profile(
     )
 
 
-@app.external
+@app.external(read_only=True)
 def get_profile(user: pt.abi.Address, *, output: UserRecord) -> pt.Expr:
     return pt.Seq(
         pt.Assert(state.b_info[user].exists(), comment="Not Exist"),
