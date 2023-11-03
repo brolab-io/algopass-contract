@@ -7,8 +7,8 @@ import { getAlgoNodeConfig } from '@algorandfoundation/algokit-utils'
 export async function deploy() {
   console.log('=== Deploying Algopass ===')
 
-  const algod = algokit.getAlgoClient(getAlgoNodeConfig('testnet', 'algod'))
-  const indexer = algokit.getAlgoIndexerClient(getAlgoNodeConfig('testnet', 'indexer'))
+  const algod = algokit.getAlgoClient()
+  const indexer = algokit.getAlgoIndexerClient()
   const deployer = await algokit.mnemonicAccountFromEnvironment({ name: 'DEPLOYER', fundWith: algokit.algos(3) }, algod)
   // const deployer = await algokit.mnemonicAccount(process.env.ACCOUNT_MNEMONIC!)
   await algokit.ensureFunded(
