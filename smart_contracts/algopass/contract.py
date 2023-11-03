@@ -1,12 +1,8 @@
-from typing import Literal
-
 import beaker
 import pyteal as pt
 from algokit_utils import DELETABLE_TEMPLATE_NAME, UPDATABLE_TEMPLATE_NAME
 from beaker.consts import BOX_BYTE_MIN_BALANCE, BOX_FLAT_MIN_BALANCE
 from beaker.lib.storage import BoxMapping
-
-byte32 = pt.abi.StaticArray[pt.abi.Byte, Literal[32]]
 
 
 class UserUrl(pt.abi.NamedTuple):
@@ -105,7 +101,7 @@ def get_profile(user: pt.abi.Address, *, output: UserRecord) -> pt.Expr:
     )
 
 
-def canculate_fee() -> pt.Int:
+def canculate_fee_box() -> pt.Int:
     return pt.Int(
         BOX_FLAT_MIN_BALANCE
         + (pt.abi.size_of(pt.abi.Address) * BOX_BYTE_MIN_BALANCE)
