@@ -8,9 +8,11 @@ from beaker.lib.storage import BoxMapping
 
 byte32 = pt.abi.StaticArray[pt.abi.Byte, Literal[32]]
 
+
 class UserUrl(pt.abi.NamedTuple):
     label: pt.abi.Field[pt.abi.String]
     url: pt.abi.Field[pt.abi.String]
+
 
 class UserRecord(pt.abi.NamedTuple):
     name: pt.abi.Field[pt.abi.String]
@@ -46,7 +48,12 @@ MAX_BIO_LEN = pt.Int(200)
 
 
 @app.external
-def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> pt.Expr:
+def init_profile(
+    payment: pt.abi.PaymentTransaction,
+    urls: pt.abi.DynamicArray[UserUrl],
+    *,
+    output: pt.abi.Bool,
+) -> pt.Expr:
     return pt.Seq(
         pt.Assert(
             pt.Not(state.b_info[pt.Txn.sender()].exists()), comment="Initialized"
@@ -63,7 +70,15 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
         (name := pt.abi.String()).set(pt.Bytes("name")),
         (bio := pt.abi.String()).set(pt.Bytes("bio")),
         (uri := pt.abi.String()).set(pt.Bytes("ipfs://")),
-        (temp := UserRecord()).set(name, bio, uri),
+        # (urls := pt.abi.DynamicArray[UserUrl]).set(
+        #     pt.Concat(
+        #         pt.Bytes("fb"),
+        #         pt.Bytes("hongthaipro"),
+        #         pt.Bytes("tx"),
+        #         pt.Bytes("leopham_it"),
+        #     )
+        # ),
+        (temp := UserRecord()).set(name, bio, uri, urls),
         state.b_info[pt.Txn.sender()].set(temp),
         output.set(pt.Int(1)),
     )
@@ -71,7 +86,12 @@ def init_profile(payment: pt.abi.PaymentTransaction, *, output: pt.abi.Bool) -> 
 
 @app.external
 def update_profile(
-    name: pt.abi.String, bio: pt.abi.String, uri: pt.abi.String, urls: pt.abi.DynamicArray[UserUrl], *, output: UserRecord
+    name: pt.abi.String,
+    bio: pt.abi.String,
+    uri: pt.abi.String,
+    urls: pt.abi.DynamicArray[UserUrl],
+    *,
+    output: UserRecord,
 ) -> pt.Expr:
     return pt.Seq(
         pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
@@ -80,7 +100,16 @@ def update_profile(
         (cur_p := UserRecord()).decode(state.b_info[pt.Txn.sender()].get()),
         cur_p.set(name, bio, uri, urls),
         state.b_info[pt.Txn.sender()].set(cur_p),
-        output.decode(cur_p.encode()),
+        state.b_info[pt.Txn.sender()].store_into(output),
+        # output.decode(cur_p.encode()),
+    )
+
+
+@app.external
+def get_profile(user: pt.abi.Address, *, output: UserRecord) -> pt.Expr:
+    return pt.Seq(
+        pt.Assert(state.b_info[user].exists(), comment="Not Exist"),
+        state.b_info[user].store_into(output),
     )
 
 
