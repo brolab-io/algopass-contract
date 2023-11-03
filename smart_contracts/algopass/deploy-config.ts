@@ -1,6 +1,7 @@
 import * as algokit from '@algorandfoundation/algokit-utils'
 import { AlgopassClient } from '../artifacts/algopass/client'
 import algosdk, { decodeAddress } from 'algosdk'
+import { getAlgoNodeConfig } from '@algorandfoundation/algokit-utils'
 
 // Below is a showcase of various deployment options you can use in TypeScript Client
 export async function deploy() {
@@ -70,6 +71,9 @@ export async function deploy() {
         ["email", "hongthaipro@gmail.com"]
       ]
     }, { boxes })
+
+    console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
+    console.log(resultUpdate.return)
 
   } catch (error) {
     const suggestedParams = await algod.getTransactionParams().do();
