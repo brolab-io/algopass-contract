@@ -1,43 +1,35 @@
 #pragma version 8
 intcblock 0 1 65536 200
-bytecblock 0x 0x151f7c75 0x675f636f756e746572 0x675f666565
+bytecblock 0x 0x675f636f756e746572 0x675f666565 0x151f7c75 0x00
 txn NumAppArgs
 intc_0 // 0
 ==
-bnz main_l12
+bnz main_l14
 txna ApplicationArgs 0
 pushbytes 0x95a6907e // "init_profile(pay,string,string,(string,string)[])bool"
 ==
-bnz main_l11
+bnz main_l13
 txna ApplicationArgs 0
 pushbytes 0x0d14922b // "update_profile(string,(string,string)[])(string,string,(string,string)[])"
 ==
-bnz main_l10
+bnz main_l12
 txna ApplicationArgs 0
 pushbytes 0x569e7f41 // "get_profile(address)(string,string,(string,string)[])"
 ==
-bnz main_l9
+bnz main_l11
+txna ApplicationArgs 0
+pushbytes 0xe23f5056 // "remove_profile()bool"
+==
+bnz main_l10
 txna ApplicationArgs 0
 pushbytes 0x571bf70a // "update_fee(uint64)void"
 ==
-bnz main_l8
+bnz main_l9
 txna ApplicationArgs 0
 pushbytes 0x02bece11 // "hello(string)string"
 ==
-bnz main_l7
+bnz main_l8
 err
-main_l7:
-txn OnCompletion
-intc_0 // NoOp
-==
-txn ApplicationID
-intc_0 // 0
-!=
-&&
-assert
-callsub hellocaster_12
-intc_1 // 1
-return
 main_l8:
 txn OnCompletion
 intc_0 // NoOp
@@ -47,7 +39,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updatefeecaster_11
+callsub hellocaster_14
 intc_1 // 1
 return
 main_l9:
@@ -59,7 +51,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub getprofilecaster_10
+callsub updatefeecaster_13
 intc_1 // 1
 return
 main_l10:
@@ -71,7 +63,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updateprofilecaster_9
+callsub removeprofilecaster_12
 intc_1 // 1
 return
 main_l11:
@@ -83,40 +75,64 @@ intc_0 // 0
 !=
 &&
 assert
-callsub initprofilecaster_8
+callsub getprofilecaster_11
 intc_1 // 1
 return
 main_l12:
 txn OnCompletion
 intc_0 // NoOp
 ==
-bnz main_l18
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub updateprofilecaster_10
+intc_1 // 1
+return
+main_l13:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub initprofilecaster_9
+intc_1 // 1
+return
+main_l14:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l20
 txn OnCompletion
 pushint 4 // UpdateApplication
 ==
-bnz main_l17
+bnz main_l19
 txn OnCompletion
 pushint 5 // DeleteApplication
 ==
-bnz main_l16
+bnz main_l18
 err
-main_l16:
-txn ApplicationID
-intc_0 // 0
-!=
-assert
-callsub delete_6
-intc_1 // 1
-return
-main_l17:
-txn ApplicationID
-intc_0 // 0
-!=
-assert
-callsub update_5
-intc_1 // 1
-return
 main_l18:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub delete_7
+intc_1 // 1
+return
+main_l19:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub update_6
+intc_1 // 1
+return
+main_l20:
 txn ApplicationID
 intc_0 // 0
 ==
@@ -128,10 +144,10 @@ return
 // create
 create_0:
 proto 0 0
-bytec_2 // "g_counter"
+bytec_1 // "g_counter"
 intc_0 // 0
 app_global_put
-bytec_3 // "g_fee"
+bytec_2 // "g_fee"
 pushint 1000000 // 1000000
 app_global_put
 retsub
@@ -166,13 +182,13 @@ global CurrentApplicationAddress
 assert
 frame_dig -4
 gtxns Amount
-bytec_3 // "g_fee"
+bytec_2 // "g_fee"
 app_global_get
 ==
 // payment must be for >= (app_global_get (utf8 bytes: "g_fee"))
 assert
-bytec_2 // "g_counter"
-bytec_2 // "g_counter"
+bytec_1 // "g_counter"
+bytec_1 // "g_counter"
 app_global_get
 intc_1 // 1
 +
@@ -385,21 +401,69 @@ load 10
 frame_bury 0
 retsub
 
+// remove_profile
+removeprofile_4:
+proto 0 1
+intc_0 // 0
+txn Sender
+box_len
+store 14
+store 13
+load 14
+// Not Exist
+assert
+txn Sender
+box_del
+pop
+bytec_1 // "g_counter"
+bytec_1 // "g_counter"
+app_global_get
+intc_1 // 1
+-
+app_global_put
+bytec_2 // "g_fee"
+app_global_get
+pushint 10000 // 10000
+*
+pushint 800 // 800
+/
+store 12
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+bytec_2 // "g_fee"
+app_global_get
+pushint 500000 // 500000
+-
+itxn_field Amount
+txn Sender
+itxn_field Receiver
+global CurrentApplicationAddress
+itxn_field Sender
+pushint 1000 // 1000
+itxn_field Fee
+itxn_submit
+intc_1 // 1
+!
+!
+frame_bury 0
+retsub
+
 // update_fee
-updatefee_4:
+updatefee_5:
 proto 1 0
 txn Sender
 global CreatorAddress
 ==
 // unauthorized
 assert
-bytec_3 // "g_fee"
+bytec_2 // "g_fee"
 frame_dig -1
 app_global_put
 retsub
 
 // update
-update_5:
+update_6:
 proto 0 0
 txn Sender
 global CreatorAddress
@@ -412,7 +476,7 @@ assert
 retsub
 
 // delete
-delete_6:
+delete_7:
 proto 0 0
 txn Sender
 global CreatorAddress
@@ -425,7 +489,7 @@ assert
 retsub
 
 // hello
-hello_7:
+hello_8:
 proto 1 1
 bytec_0 // ""
 pushbytes 0x48656c6c6f2c20 // "Hello, "
@@ -443,7 +507,7 @@ frame_bury 0
 retsub
 
 // init_profile_caster
-initprofilecaster_8:
+initprofilecaster_9:
 proto 0 0
 intc_0 // 0
 dup
@@ -470,8 +534,8 @@ frame_dig 3
 frame_dig 4
 callsub initprofile_1
 frame_bury 0
-bytec_1 // 0x151f7c75
-pushbytes 0x00 // 0x00
+bytec_3 // 0x151f7c75
+bytec 4 // 0x00
 intc_0 // 0
 frame_dig 0
 setbit
@@ -480,7 +544,7 @@ log
 retsub
 
 // update_profile_caster
-updateprofilecaster_9:
+updateprofilecaster_10:
 proto 0 0
 bytec_0 // ""
 dupn 2
@@ -492,14 +556,14 @@ frame_dig 1
 frame_dig 2
 callsub updateprofile_2
 frame_bury 0
-bytec_1 // 0x151f7c75
+bytec_3 // 0x151f7c75
 frame_dig 0
 concat
 log
 retsub
 
 // get_profile_caster
-getprofilecaster_10:
+getprofilecaster_11:
 proto 0 0
 bytec_0 // ""
 dup
@@ -508,34 +572,49 @@ frame_bury 1
 frame_dig 1
 callsub getprofile_3
 frame_bury 0
-bytec_1 // 0x151f7c75
+bytec_3 // 0x151f7c75
 frame_dig 0
 concat
 log
 retsub
 
+// remove_profile_caster
+removeprofilecaster_12:
+proto 0 0
+intc_0 // 0
+callsub removeprofile_4
+frame_bury 0
+bytec_3 // 0x151f7c75
+bytec 4 // 0x00
+intc_0 // 0
+frame_dig 0
+setbit
+concat
+log
+retsub
+
 // update_fee_caster
-updatefeecaster_11:
+updatefeecaster_13:
 proto 0 0
 intc_0 // 0
 txna ApplicationArgs 1
 btoi
 frame_bury 0
 frame_dig 0
-callsub updatefee_4
+callsub updatefee_5
 retsub
 
 // hello_caster
-hellocaster_12:
+hellocaster_14:
 proto 0 0
 bytec_0 // ""
 dup
 txna ApplicationArgs 1
 frame_bury 1
 frame_dig 1
-callsub hello_7
+callsub hello_8
 frame_bury 0
-bytec_1 // 0x151f7c75
+bytec_3 // 0x151f7c75
 frame_dig 0
 concat
 log

@@ -99,6 +99,27 @@ def get_profile(user: pt.abi.Address, *, output: UserRecord) -> pt.Expr:
     )
 
 
+@app.external
+def remove_profile(*, output: pt.abi.Bool) -> pt.Expr:
+    return_amount = pt.ScratchVar(pt.TealType.uint64)
+    return pt.Seq(
+        pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
+        pt.Pop(state.b_info[pt.Txn.sender()].delete()),
+        state.g_counter.decrement(),
+        return_amount.store(state.g_fee.get() * pt.Int(10000) / pt.Int(800)),
+        pt.InnerTxnBuilder.Execute(
+            {
+                pt.TxnField.type_enum: pt.TxnType.Payment,
+                pt.TxnField.amount: state.g_fee.get() - pt.Int(500000),
+                pt.TxnField.receiver: pt.Txn.sender(),
+                pt.TxnField.sender: pt.Global.current_application_address(),
+                pt.TxnField.fee: pt.Int(1000),
+            }
+        ),
+        output.set(pt.Int(1)),
+    )
+
+
 def canculate_fee_box() -> pt.Int:
     return pt.Int(
         BOX_FLAT_MIN_BALANCE

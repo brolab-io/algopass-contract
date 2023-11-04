@@ -54,7 +54,7 @@ export async function deploy() {
   const response = await appClient.hello({ name: 'world' })
   console.log(`Called ${method} on ${app.name} (${app.appId}) with name = world, received: ${response.return}`)
   const boxes = [{ appId: app.appId, name: decodeAddress(deployer.addr).publicKey }]
-  const isTest = true
+  const isTest = await algokit.isLocalNet(algod)
   if (isTest) {
     try {
 
@@ -73,24 +73,29 @@ export async function deploy() {
       const decoded = valueCodec.decode(box.value);
 
       console.log(UserRecord(decoded as any))
-      const resultGetProfile = await appClient.getProfile({ user: deployer.addr }, {
-        boxes,
-      })
-      console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
-      console.log(resultGetProfile.return)
 
-      const resultUpdate = await appClient.updateProfile({
-        bio: "I am a developer",
-        urls: [
-          ["github", "hongthaipham"],
-          ["twitter", "hongthaipham"],
-          ["linkedin", "hongthaipham"],
-          ["email", "hongthaipro@gmail.com"]
-        ]
-      }, { boxes })
 
-      console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
-      console.log(resultUpdate.return)
+      // const resultGetProfile = await appClient.getProfile({ user: deployer.addr }, {
+      //   boxes,
+      // })
+      // console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
+      // console.log(resultGetProfile.return)
+
+      // const resultUpdate = await appClient.updateProfile({
+      //   bio: "I am a developer",
+      //   urls: [
+      //     ["github", "hongthaipham"],
+      //     ["twitter", "hongthaipham"],
+      //     ["linkedin", "hongthaipham"],
+      //     ["email", "hongthaipro@gmail.com"]
+      //   ]
+      // }, { boxes })
+
+      // console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
+      // console.log(resultUpdate.return)
+
+      // const resultRemove = await appClient.removeProfile({ user: deployer.addr }, { boxes })
+      // console.log(`Called removeProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}, received: ${resultRemove.return}`)
 
     } catch (error) {
       const suggestedParams = await algod.getTransactionParams().do();
@@ -106,7 +111,7 @@ export async function deploy() {
         bio: "I am a developer", urls: [["email", ""]]
       }, { boxes })
       console.log(`Called initProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}, received: ${resultInit.return}`)
-      console.log(error)
+      // console.log(error)
     }
   }
 
