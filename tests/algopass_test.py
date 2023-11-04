@@ -65,6 +65,8 @@ def test_init_profile(algopass_client: ApplicationClient) -> None:
         algopass_contract.init_profile,
         transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
         payment=pay_txn,
+        name="Leo Pham",
+        bio="Leo Pham is a blockchain developer",
         urls=[("email", "")],
     )
     g_counter = algopass_client.get_global_state().get("g_counter")
@@ -78,9 +80,7 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
     result = algopass_client.call(
         algopass_contract.update_profile,
         transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
-        name="Leo Pham",
         bio="Leo Pham is a blockchain developer",
-        uri="ipfs://xx.y/metadata.json",
         urls=[
             ("fb", "hongthaipro"),
             ("tx", "leopham_it"),
@@ -90,7 +90,6 @@ def test_update_profile(algopass_client: ApplicationClient) -> None:
     assert result.return_value == [
         "Leo Pham",
         "Leo Pham is a blockchain developer",
-        "ipfs://xx.y/metadata.json",
         [
             ["fb", "hongthaipro"],
             ["tx", "leopham_it"],

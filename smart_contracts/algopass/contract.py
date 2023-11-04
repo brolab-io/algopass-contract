@@ -13,7 +13,6 @@ class UserUrl(pt.abi.NamedTuple):
 class UserRecord(pt.abi.NamedTuple):
     name: pt.abi.Field[pt.abi.String]
     bio: pt.abi.Field[pt.abi.String]
-    uri: pt.abi.Field[pt.abi.String]
     urls: pt.abi.Field[pt.abi.DynamicArray[UserUrl]]
 
 
@@ -39,13 +38,15 @@ app = beaker.Application("algopass", state=state).apply(
     beaker.unconditional_create_approval, initialize_global_state=True
 )
 
-MAX_NAME_LEN = pt.Int(20)
+MAX_NAME_LEN = pt.Int(15)
 MAX_BIO_LEN = pt.Int(200)
 
 
 @app.external
 def init_profile(
     payment: pt.abi.PaymentTransaction,
+    name: pt.abi.String,
+    bio: pt.abi.String,
     urls: pt.abi.DynamicArray[UserUrl],
     *,
     output: pt.abi.Bool,
@@ -63,10 +64,9 @@ def init_profile(
             comment=f"payment must be for >= {state.g_fee.get()}",
         ),
         state.g_counter.increment(),
-        (name := pt.abi.String()).set(pt.Bytes("name")),
-        (bio := pt.abi.String()).set(pt.Bytes("bio")),
-        (uri := pt.abi.String()).set(pt.Bytes("ipfs://")),
-        (temp := UserRecord()).set(name, bio, uri, urls),
+        pt.Assert(pt.Len(name.get()) <= MAX_NAME_LEN),
+        pt.Assert(pt.Len(bio.get()) <= MAX_BIO_LEN),
+        (temp := UserRecord()).set(name, bio, urls),
         state.b_info[pt.Txn.sender()].set(temp),
         output.set(pt.Int(1)),
     )
@@ -74,19 +74,17 @@ def init_profile(
 
 @app.external
 def update_profile(
-    name: pt.abi.String,
     bio: pt.abi.String,
-    uri: pt.abi.String,
     urls: pt.abi.DynamicArray[UserUrl],
     *,
     output: UserRecord,
 ) -> pt.Expr:
     return pt.Seq(
         pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
-        pt.Assert(pt.Len(name.get()) <= MAX_NAME_LEN),
         pt.Assert(pt.Len(bio.get()) <= MAX_BIO_LEN),
         (cur_p := UserRecord()).decode(state.b_info[pt.Txn.sender()].get()),
-        cur_p.set(name, bio, uri, urls),
+        (keep_name := pt.abi.String()).set(cur_p.name),
+        cur_p.set(keep_name, bio, urls),
         state.b_info[pt.Txn.sender()].set(cur_p),
         state.b_info[pt.Txn.sender()].store_into(output),
         # output.decode(cur_p.encode()),
