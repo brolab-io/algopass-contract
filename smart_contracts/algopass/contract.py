@@ -38,6 +38,7 @@ app = beaker.Application("algopass", state=state).apply(
     beaker.unconditional_create_approval, initialize_global_state=True
 )
 
+MIN_BAL = pt.Int(100000)
 MAX_NAME_LEN = pt.Int(15)
 MAX_BIO_LEN = pt.Int(200)
 FEE_WHEN_DELETE = pt.Int(500000)
@@ -108,19 +109,34 @@ def remove_profile(*, output: pt.abi.Bool) -> pt.Expr:
         pt.Pop(state.b_info[pt.Txn.sender()].delete()),
         state.g_counter.decrement(),
         return_amount.store(state.g_fee.get() - FEE_WHEN_DELETE),
-        pt.Assert(
-            pt.Balance(pt.Global.current_application_address()) > return_amount.load()
-        ),
-        pt.InnerTxnBuilder.Execute(
+        _do_refund(return_amount.load()),
+        # pt.InnerTxnBuilder.Execute(
+        #     {
+        #         pt.TxnField.type_enum: pt.TxnType.Payment,
+        #         pt.TxnField.amount: return_amount.load(),
+        #         pt.TxnField.receiver: pt.Txn.sender(),
+        #         pt.TxnField.sender: pt.Global.current_application_address(),
+        #         pt.TxnField.fee: pt.Global.min_txn_fee(),
+        #     }
+        # ),
+        output.set(pt.Int(1)),
+    )
+
+
+def _do_refund(amount: pt.Expr) -> pt.Expr:
+    return pt.Seq(
+        pt.Assert(pt.Balance(pt.Global.current_application_address()) > amount),
+        pt.InnerTxnBuilder.Begin(),
+        pt.InnerTxnBuilder.SetFields(
             {
                 pt.TxnField.type_enum: pt.TxnType.Payment,
-                pt.TxnField.amount: return_amount.load(),
+                pt.TxnField.amount: amount,
                 pt.TxnField.receiver: pt.Txn.sender(),
                 pt.TxnField.sender: pt.Global.current_application_address(),
                 pt.TxnField.fee: pt.Global.min_txn_fee(),
             }
         ),
-        output.set(pt.Int(1)),
+        pt.InnerTxnBuilder.Submit(),
     )
 
 
@@ -134,7 +150,7 @@ def canculate_fee_box() -> pt.Int:
 
 @app.external(authorize=beaker.Authorize.only_creator())
 def update_fee(fee: pt.abi.Uint64) -> pt.Expr:
-    return state.g_fee.set(fee.get())
+    return pt.Seq(pt.Assert(fee.get() > FEE_WHEN_DELETE), state.g_fee.set(fee.get()))
 
 
 @app.update(authorize=beaker.Authorize.only_creator(), bare=True)
@@ -147,9 +163,32 @@ def update() -> pt.Expr:
 
 @app.delete(authorize=beaker.Authorize.only_creator(), bare=True)
 def delete() -> pt.Expr:
-    return pt.Assert(
-        pt.Tmpl.Int(DELETABLE_TEMPLATE_NAME),
-        comment="Check app is deletable",
+    return pt.Seq(
+        pt.Assert(
+            pt.Tmpl.Int(DELETABLE_TEMPLATE_NAME),
+            comment="Check app is deletable",
+        ),
+        pt.If(
+            pt.Balance(pt.Global.current_application_address()) > MIN_BAL,
+            withdraw_funds(),
+        ),
+    )
+
+
+@pt.Subroutine(pt.TealType.none)
+def withdraw_funds() -> pt.Expr:
+    app_bal = pt.Balance(pt.Global.current_application_address())
+    return pt.Seq(
+        pt.Assert(
+            app_bal > MIN_BAL,
+        ),
+        pt.InnerTxnBuilder.Execute(
+            {
+                pt.TxnField.type_enum: pt.TxnType.Payment,
+                pt.TxnField.receiver: pt.Txn.sender(),
+                pt.TxnField.amount: app_bal - MIN_BAL,
+            }
+        ),
     )
 
 
