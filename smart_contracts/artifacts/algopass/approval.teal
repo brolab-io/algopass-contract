@@ -1,5 +1,5 @@
 #pragma version 8
-intcblock 0 1 65536 200
+intcblock 0 1 65536 100000 200 500000
 bytecblock 0x 0x675f636f756e746572 0x151f7c75 0x675f666565 0x00
 txn NumAppArgs
 intc_0 // 0
@@ -39,7 +39,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub hellocaster_14
+callsub hellocaster_15
 intc_1 // 1
 return
 main_l9:
@@ -51,7 +51,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updatefeecaster_13
+callsub updatefeecaster_14
 intc_1 // 1
 return
 main_l10:
@@ -63,7 +63,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub removeprofilecaster_12
+callsub removeprofilecaster_13
 intc_1 // 1
 return
 main_l11:
@@ -75,7 +75,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub getprofilecaster_11
+callsub getprofilecaster_12
 intc_1 // 1
 return
 main_l12:
@@ -87,7 +87,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub updateprofilecaster_10
+callsub updateprofilecaster_11
 intc_1 // 1
 return
 main_l13:
@@ -99,7 +99,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub initprofilecaster_9
+callsub initprofilecaster_10
 intc_1 // 1
 return
 main_l14:
@@ -202,7 +202,7 @@ assert
 frame_dig -2
 extract 2 0
 len
-intc_3 // 200
+intc 4 // 200
 <=
 assert
 frame_dig -3
@@ -290,7 +290,7 @@ assert
 frame_dig -2
 extract 2 0
 len
-intc_3 // 200
+intc 4 // 200
 <=
 assert
 txn Sender
@@ -423,7 +423,7 @@ intc_1 // 1
 app_global_put
 bytec_3 // "g_fee"
 app_global_get
-pushint 500000 // 500000
+intc 5 // 500000
 -
 store 12
 global CurrentApplicationAddress
@@ -457,6 +457,10 @@ global CreatorAddress
 ==
 // unauthorized
 assert
+frame_dig -1
+intc 5 // 500000
+>
+assert
 bytec_3 // "g_fee"
 frame_dig -1
 app_global_put
@@ -486,10 +490,38 @@ assert
 pushint TMPL_DELETABLE // TMPL_DELETABLE
 // Check app is deletable
 assert
+global CurrentApplicationAddress
+balance
+intc_3 // 100000
+>
+bz delete_7_l2
+callsub withdrawfunds_8
+delete_7_l2:
+retsub
+
+// withdraw_funds
+withdrawfunds_8:
+proto 0 0
+global CurrentApplicationAddress
+balance
+intc_3 // 100000
+>
+assert
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+txn Sender
+itxn_field Receiver
+global CurrentApplicationAddress
+balance
+intc_3 // 100000
+-
+itxn_field Amount
+itxn_submit
 retsub
 
 // hello
-hello_8:
+hello_9:
 proto 1 1
 bytec_0 // ""
 pushbytes 0x48656c6c6f2c20 // "Hello, "
@@ -507,7 +539,7 @@ frame_bury 0
 retsub
 
 // init_profile_caster
-initprofilecaster_9:
+initprofilecaster_10:
 proto 0 0
 intc_0 // 0
 dup
@@ -544,7 +576,7 @@ log
 retsub
 
 // update_profile_caster
-updateprofilecaster_10:
+updateprofilecaster_11:
 proto 0 0
 bytec_0 // ""
 dupn 2
@@ -563,7 +595,7 @@ log
 retsub
 
 // get_profile_caster
-getprofilecaster_11:
+getprofilecaster_12:
 proto 0 0
 bytec_0 // ""
 dup
@@ -579,7 +611,7 @@ log
 retsub
 
 // remove_profile_caster
-removeprofilecaster_12:
+removeprofilecaster_13:
 proto 0 0
 intc_0 // 0
 callsub removeprofile_4
@@ -594,7 +626,7 @@ log
 retsub
 
 // update_fee_caster
-updatefeecaster_13:
+updatefeecaster_14:
 proto 0 0
 intc_0 // 0
 txna ApplicationArgs 1
@@ -605,14 +637,14 @@ callsub updatefee_5
 retsub
 
 // hello_caster
-hellocaster_14:
+hellocaster_15:
 proto 0 0
 bytec_0 // ""
 dup
 txna ApplicationArgs 1
 frame_bury 1
 frame_dig 1
-callsub hello_8
+callsub hello_9
 frame_bury 0
 bytec_2 // 0x151f7c75
 frame_dig 0
