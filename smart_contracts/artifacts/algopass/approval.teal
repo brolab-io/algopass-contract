@@ -1,6 +1,6 @@
 #pragma version 8
 intcblock 0 1 65536 200
-bytecblock 0x 0x675f636f756e746572 0x675f666565 0x151f7c75 0x00
+bytecblock 0x 0x675f636f756e746572 0x151f7c75 0x675f666565 0x00
 txn NumAppArgs
 intc_0 // 0
 ==
@@ -147,7 +147,7 @@ proto 0 0
 bytec_1 // "g_counter"
 intc_0 // 0
 app_global_put
-bytec_2 // "g_fee"
+bytec_3 // "g_fee"
 pushint 1000000 // 1000000
 app_global_put
 retsub
@@ -182,7 +182,7 @@ global CurrentApplicationAddress
 assert
 frame_dig -4
 gtxns Amount
-bytec_2 // "g_fee"
+bytec_3 // "g_fee"
 app_global_get
 ==
 // payment must be for >= (app_global_get (utf8 bytes: "g_fee"))
@@ -421,26 +421,26 @@ app_global_get
 intc_1 // 1
 -
 app_global_put
-bytec_2 // "g_fee"
-app_global_get
-pushint 10000 // 10000
-*
-pushint 800 // 800
-/
-store 12
-itxn_begin
-intc_1 // pay
-itxn_field TypeEnum
-bytec_2 // "g_fee"
+bytec_3 // "g_fee"
 app_global_get
 pushint 500000 // 500000
 -
+store 12
+global CurrentApplicationAddress
+balance
+load 12
+>
+assert
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+load 12
 itxn_field Amount
 txn Sender
 itxn_field Receiver
 global CurrentApplicationAddress
 itxn_field Sender
-pushint 1000 // 1000
+global MinTxnFee
 itxn_field Fee
 itxn_submit
 intc_1 // 1
@@ -457,7 +457,7 @@ global CreatorAddress
 ==
 // unauthorized
 assert
-bytec_2 // "g_fee"
+bytec_3 // "g_fee"
 frame_dig -1
 app_global_put
 retsub
@@ -534,7 +534,7 @@ frame_dig 3
 frame_dig 4
 callsub initprofile_1
 frame_bury 0
-bytec_3 // 0x151f7c75
+bytec_2 // 0x151f7c75
 bytec 4 // 0x00
 intc_0 // 0
 frame_dig 0
@@ -556,7 +556,7 @@ frame_dig 1
 frame_dig 2
 callsub updateprofile_2
 frame_bury 0
-bytec_3 // 0x151f7c75
+bytec_2 // 0x151f7c75
 frame_dig 0
 concat
 log
@@ -572,7 +572,7 @@ frame_bury 1
 frame_dig 1
 callsub getprofile_3
 frame_bury 0
-bytec_3 // 0x151f7c75
+bytec_2 // 0x151f7c75
 frame_dig 0
 concat
 log
@@ -584,7 +584,7 @@ proto 0 0
 intc_0 // 0
 callsub removeprofile_4
 frame_bury 0
-bytec_3 // 0x151f7c75
+bytec_2 // 0x151f7c75
 bytec 4 // 0x00
 intc_0 // 0
 frame_dig 0
@@ -614,7 +614,7 @@ frame_bury 1
 frame_dig 1
 callsub hello_8
 frame_bury 0
-bytec_3 // 0x151f7c75
+bytec_2 // 0x151f7c75
 frame_dig 0
 concat
 log

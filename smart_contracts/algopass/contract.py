@@ -40,6 +40,7 @@ app = beaker.Application("algopass", state=state).apply(
 
 MAX_NAME_LEN = pt.Int(15)
 MAX_BIO_LEN = pt.Int(200)
+FEE_WHEN_DELETE = pt.Int(500000)
 
 
 @app.external
@@ -106,14 +107,17 @@ def remove_profile(*, output: pt.abi.Bool) -> pt.Expr:
         pt.Assert(state.b_info[pt.Txn.sender()].exists(), comment="Not Exist"),
         pt.Pop(state.b_info[pt.Txn.sender()].delete()),
         state.g_counter.decrement(),
-        return_amount.store(state.g_fee.get() * pt.Int(10000) / pt.Int(800)),
+        return_amount.store(state.g_fee.get() - FEE_WHEN_DELETE),
+        pt.Assert(
+            pt.Balance(pt.Global.current_application_address()) > return_amount.load()
+        ),
         pt.InnerTxnBuilder.Execute(
             {
                 pt.TxnField.type_enum: pt.TxnType.Payment,
-                pt.TxnField.amount: state.g_fee.get() - pt.Int(500000),
+                pt.TxnField.amount: return_amount.load(),
                 pt.TxnField.receiver: pt.Txn.sender(),
                 pt.TxnField.sender: pt.Global.current_application_address(),
-                pt.TxnField.fee: pt.Int(1000),
+                pt.TxnField.fee: pt.Global.min_txn_fee(),
             }
         ),
         output.set(pt.Int(1)),

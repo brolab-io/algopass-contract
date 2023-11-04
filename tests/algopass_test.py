@@ -106,7 +106,35 @@ def test_get_profile(algopass_client: ApplicationClient) -> None:
         transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
         user=decode_address(acct.address),
     )
-    print(result.return_value)
+    assert result.return_value == [
+        "Leo Pham",
+        "Leo Pham is a blockchain developer",
+        [
+            ["fb", "hongthaipro"],
+            ["tx", "leopham_it"],
+            ["email", "hongthaipro@gmail.com"],
+        ],
+    ]
+
+
+def test_delete_profile(algopass_client: ApplicationClient) -> None:
+    acct = get_localnet_default_account(algopass_client.algod_client)
+    boxes = [(algopass_client.app_id, decode_address(acct.address))]
+    result = algopass_client.call(
+        algopass_contract.remove_profile,
+        transaction_parameters=OnCompleteCallParametersDict(boxes=boxes),
+    )
+    assert result.return_value == 1
+
+
+# def test_decode_profile(algopass_client: ApplicationClient) -> None:
+#     acct = get_localnet_default_account(algopass_client.algod_client)
+#     box = algopass_client.algod_client.application_box_by_name(
+#         application_id=algopass_client.app_id, box_name=decode_address(acct.address)
+#     )
+#     codec = abi.ABIType.from_string("(string,string,(string,string)[])")
+#     # box_decoded = codec.decode(box.decode)
+#     print(box.get())
 
 
 # def test_encode() -> None:

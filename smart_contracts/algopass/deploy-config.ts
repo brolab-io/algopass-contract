@@ -7,10 +7,10 @@ import { getAlgoNodeConfig } from '@algorandfoundation/algokit-utils'
 export async function deploy() {
   console.log('=== Deploying Algopass ===')
 
-  // const algod = algokit.getAlgoClient(getAlgoNodeConfig('testnet', 'algod'))
-  // const indexer = algokit.getAlgoIndexerClient(getAlgoNodeConfig('testnet', 'indexer'))
-  const algod = algokit.getAlgoClient()
-  const indexer = algokit.getAlgoIndexerClient()
+  const algod = algokit.getAlgoClient(getAlgoNodeConfig('testnet', 'algod'))
+  const indexer = algokit.getAlgoIndexerClient(getAlgoNodeConfig('testnet', 'indexer'))
+  // const algod = algokit.getAlgoClient()
+  // const indexer = algokit.getAlgoIndexerClient()
   const deployer = await algokit.mnemonicAccountFromEnvironment({ name: 'DEPLOYER', fundWith: algokit.algos(3) }, algod)
   // const deployer = await algokit.mnemonicAccount(process.env.ACCOUNT_MNEMONIC!)
   await algokit.ensureFunded(
@@ -31,6 +31,7 @@ export async function deploy() {
     algod,
   )
   const isMainNet = await algokit.isMainNet(algod)
+
   const app = await appClient.deploy({
     allowDelete: !isMainNet,
     allowUpdate: !isMainNet,
@@ -53,12 +54,15 @@ export async function deploy() {
   const method = 'hello'
   const response = await appClient.hello({ name: 'world' })
   console.log(`Called ${method} on ${app.name} (${app.appId}) with name = world, received: ${response.return}`)
+
+
+  // await new Promise(r => setTimeout(r, 5000));
+
   const boxes = [{ appId: app.appId, name: decodeAddress(deployer.addr).publicKey }]
-  const isTest = await algokit.isLocalNet(algod)
+  const isTest = true //await algokit.isLocalNet(algod)
   if (isTest) {
+
     try {
-
-
       const box = await indexer.lookupApplicationBoxByIDandName(Number(app.appId), decodeAddress(deployer.addr).publicKey).do()
       // console.log({ box })
       // const stringTupleCodec = algosdk.ABIType.from('address');
@@ -80,22 +84,23 @@ export async function deploy() {
       // })
       // console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
       // console.log(resultGetProfile.return)
+      await new Promise(r => setTimeout(r, 2000));
+      const resultUpdate = await appClient.updateProfile({
+        bio: "I am a developer",
+        urls: [
+          ["github", "hongthaipham"],
+          ["twitter", "hongthaipham"],
+          ["linkedin", "hongthaipham"],
+          ["email", "hongthaipro@gmail.com"]
+        ]
+      }, { boxes })
 
-      // const resultUpdate = await appClient.updateProfile({
-      //   bio: "I am a developer",
-      //   urls: [
-      //     ["github", "hongthaipham"],
-      //     ["twitter", "hongthaipham"],
-      //     ["linkedin", "hongthaipham"],
-      //     ["email", "hongthaipro@gmail.com"]
-      //   ]
-      // }, { boxes })
+      console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
+      console.log(resultUpdate.return)
 
-      // console.log(`Called updateProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}`)
-      // console.log(resultUpdate.return)
-
-      // const resultRemove = await appClient.removeProfile({ user: deployer.addr }, { boxes })
-      // console.log(`Called removeProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}, received: ${resultRemove.return}`)
+      await new Promise(r => setTimeout(r, 2000));
+      const resultRemove = await appClient.removeProfile({ user: deployer.addr }, { boxes })
+      console.log(`Called removeProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}, received: ${resultRemove.return}`)
 
     } catch (error) {
       const suggestedParams = await algod.getTransactionParams().do();
