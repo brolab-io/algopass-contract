@@ -59,7 +59,7 @@ export async function deploy() {
   // await new Promise(r => setTimeout(r, 5000));
 
   const boxes = [{ appId: app.appId, name: decodeAddress(deployer.addr).publicKey }]
-  const isTest = true //await algokit.isLocalNet(algod)
+  const isTest = await algokit.isLocalNet(algod)
   if (isTest) {
 
     try {
