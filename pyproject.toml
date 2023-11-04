@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "algopass-contract"
-version = "0.1.1"
+version = "0.1.2"
 description = "Algorand smart contracts"
 authors = ["Leo Pham <hongthaipro@gmail.com>"]
 readme = "README.md"

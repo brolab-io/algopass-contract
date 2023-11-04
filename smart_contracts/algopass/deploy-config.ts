@@ -53,27 +53,26 @@ export async function deploy() {
   const method = 'hello'
   const response = await appClient.hello({ name: 'world' })
   console.log(`Called ${method} on ${app.name} (${app.appId}) with name = world, received: ${response.return}`)
-
+  const boxes = [{ appId: app.appId, name: decodeAddress(deployer.addr).publicKey }]
   const isTest = true
   if (isTest) {
-
-    const boxes = [{ appId: app.appId, name: decodeAddress(deployer.addr).publicKey }]
-
-    const box = await indexer.lookupApplicationBoxByIDandName(Number(app.appId), decodeAddress(deployer.addr).publicKey).do()
-    // console.log({ box })
-    // const stringTupleCodec = algosdk.ABIType.from('address');
-    // // const stringTupleData = box.name;
-    // // const encodedTuple = stringTupleCodec.encode(stringTupleData);
-    // // console.log(encodedTuple);
-    // // NX3LVM2GULOAFPBXQWBWYIPYTOVUUSTRNCXAE7VBTWERI6E6L74MAULDK4
-    // const decodedTuple = stringTupleCodec.decode(box.name);
-    // console.log(decodedTuple);
-
-    const valueCodec = algosdk.ABIType.from('(string,string,string,(string,string)[])');
-    const decoded = valueCodec.decode(box.value);
-
-    console.log(UserRecord(decoded as any))
     try {
+
+
+      const box = await indexer.lookupApplicationBoxByIDandName(Number(app.appId), decodeAddress(deployer.addr).publicKey).do()
+      // console.log({ box })
+      // const stringTupleCodec = algosdk.ABIType.from('address');
+      // // const stringTupleData = box.name;
+      // // const encodedTuple = stringTupleCodec.encode(stringTupleData);
+      // // console.log(encodedTuple);
+      // // NX3LVM2GULOAFPBXQWBWYIPYTOVUUSTRNCXAE7VBTWERI6E6L74MAULDK4
+      // const decodedTuple = stringTupleCodec.decode(box.name);
+      // console.log(decodedTuple);
+
+      const valueCodec = algosdk.ABIType.from('(string,string,(string,string)[])');
+      const decoded = valueCodec.decode(box.value);
+
+      console.log(UserRecord(decoded as any))
       const resultGetProfile = await appClient.getProfile({ user: deployer.addr }, {
         boxes,
       })
@@ -81,9 +80,7 @@ export async function deploy() {
       console.log(resultGetProfile.return)
 
       const resultUpdate = await appClient.updateProfile({
-        name: "John Doe",
         bio: "I am a developer",
-        uri: "https://www.linkedin.com/in/john-doe",
         urls: [
           ["github", "hongthaipham"],
           ["twitter", "hongthaipham"],
@@ -104,9 +101,12 @@ export async function deploy() {
         amount: 1_000_000,
       });
 
-      const resultInit = await appClient.initProfile({ payment: ptxn, urls: [["email", ""]] }, { boxes })
+      const resultInit = await appClient.initProfile({
+        payment: ptxn, name: "John Doe",
+        bio: "I am a developer", urls: [["email", ""]]
+      }, { boxes })
       console.log(`Called initProfile on ${app.name} (${app.appId}) with user = ${deployer.addr}, received: ${resultInit.return}`)
-      console.log(error.message)
+      console.log(error)
     }
   }
 

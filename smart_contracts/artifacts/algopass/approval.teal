@@ -1,20 +1,20 @@
 #pragma version 8
-intcblock 0 1 65536 8
+intcblock 0 1 65536 200
 bytecblock 0x 0x151f7c75 0x675f636f756e746572 0x675f666565
 txn NumAppArgs
 intc_0 // 0
 ==
 bnz main_l12
 txna ApplicationArgs 0
-pushbytes 0x011d2157 // "init_profile(pay,(string,string)[])bool"
+pushbytes 0x95a6907e // "init_profile(pay,string,string,(string,string)[])bool"
 ==
 bnz main_l11
 txna ApplicationArgs 0
-pushbytes 0xb8ceab61 // "update_profile(string,string,string,(string,string)[])(string,string,string,(string,string)[])"
+pushbytes 0x0d14922b // "update_profile(string,(string,string)[])(string,string,(string,string)[])"
 ==
 bnz main_l10
 txna ApplicationArgs 0
-pushbytes 0x3070bc36 // "get_profile(address)(string,string,string,(string,string)[])"
+pushbytes 0x569e7f41 // "get_profile(address)(string,string,(string,string)[])"
 ==
 bnz main_l9
 txna ApplicationArgs 0
@@ -138,10 +138,10 @@ retsub
 
 // init_profile
 initprofile_1:
-proto 2 1
+proto 4 1
 intc_0 // 0
 bytec_0 // ""
-dupn 4
+dup
 intc_0 // 0
 dup
 bytec_0 // ""
@@ -154,17 +154,17 @@ load 1
 !
 // Initialized
 assert
-frame_dig -2
+frame_dig -4
 gtxns Sender
 txn Sender
 ==
 assert
-frame_dig -2
+frame_dig -4
 gtxns Receiver
 global CurrentApplicationAddress
 ==
 assert
-frame_dig -2
+frame_dig -4
 gtxns Amount
 bytec_3 // "g_fee"
 app_global_get
@@ -177,161 +177,23 @@ app_global_get
 intc_1 // 1
 +
 app_global_put
-pushbytes 0x6e616d65 // "name"
-frame_bury 1
-frame_dig 1
-len
-itob
-extract 6 0
-frame_dig 1
-concat
-frame_bury 1
-pushbytes 0x62696f // "bio"
-frame_bury 2
-frame_dig 2
-len
-itob
-extract 6 0
-frame_dig 2
-concat
-frame_bury 2
-pushbytes 0x697066733a2f2f // "ipfs://"
-frame_bury 3
-frame_dig 3
-len
-itob
-extract 6 0
-frame_dig 3
-concat
-frame_bury 3
-frame_dig 1
-frame_bury 9
-frame_dig 9
-frame_bury 8
-intc_3 // 8
-frame_bury 6
-frame_dig 6
-frame_dig 9
-len
-+
-frame_bury 7
-frame_dig 7
-intc_2 // 65536
-<
-assert
-frame_dig 6
-itob
-extract 6 0
-frame_dig 2
-frame_bury 9
-frame_dig 8
-frame_dig 9
-concat
-frame_bury 8
-frame_dig 7
-frame_bury 6
-frame_dig 6
-frame_dig 9
-len
-+
-frame_bury 7
-frame_dig 7
-intc_2 // 65536
-<
-assert
-frame_dig 6
-itob
-extract 6 0
-concat
-frame_dig 3
-frame_bury 9
-frame_dig 8
-frame_dig 9
-concat
-frame_bury 8
-frame_dig 7
-frame_bury 6
-frame_dig 6
-frame_dig 9
-len
-+
-frame_bury 7
-frame_dig 7
-intc_2 // 65536
-<
-assert
-frame_dig 6
-itob
-extract 6 0
-concat
-frame_dig -1
-frame_bury 9
-frame_dig 8
-frame_dig 9
-concat
-frame_bury 8
-frame_dig 7
-frame_bury 6
-frame_dig 6
-itob
-extract 6 0
-concat
-frame_dig 8
-concat
-frame_bury 5
-txn Sender
-box_del
-pop
-txn Sender
-frame_dig 5
-box_put
-intc_1 // 1
-!
-!
-frame_bury 0
-retsub
-
-// update_profile
-updateprofile_2:
-proto 4 1
-bytec_0 // ""
-dupn 2
-intc_0 // 0
-dup
-bytec_0 // ""
-dup
-txn Sender
-box_len
-store 3
-store 2
-load 3
-// Not Exist
-assert
-frame_dig -4
-extract 2 0
-len
-pushint 20 // 20
-<=
-assert
 frame_dig -3
 extract 2 0
 len
-pushint 200 // 200
+pushint 15 // 15
 <=
 assert
-txn Sender
-box_get
-store 5
-store 4
-load 5
+frame_dig -2
+extract 2 0
+len
+intc_3 // 200
+<=
 assert
-load 4
-frame_bury 2
-frame_dig -4
+frame_dig -3
 frame_bury 6
 frame_dig 6
 frame_bury 5
-intc_3 // 8
+pushint 6 // 6
 frame_bury 3
 frame_dig 3
 frame_dig 6
@@ -345,27 +207,6 @@ assert
 frame_dig 3
 itob
 extract 6 0
-frame_dig -3
-frame_bury 6
-frame_dig 5
-frame_dig 6
-concat
-frame_bury 5
-frame_dig 4
-frame_bury 3
-frame_dig 3
-frame_dig 6
-len
-+
-frame_bury 4
-frame_dig 4
-intc_2 // 65536
-<
-assert
-frame_dig 3
-itob
-extract 6 0
-concat
 frame_dig -2
 frame_bury 6
 frame_dig 5
@@ -400,6 +241,111 @@ itob
 extract 6 0
 concat
 frame_dig 5
+concat
+frame_bury 2
+txn Sender
+box_del
+pop
+txn Sender
+frame_dig 2
+box_put
+intc_1 // 1
+!
+!
+frame_bury 0
+retsub
+
+// update_profile
+updateprofile_2:
+proto 2 1
+bytec_0 // ""
+dupn 3
+intc_0 // 0
+dup
+bytec_0 // ""
+dup
+txn Sender
+box_len
+store 3
+store 2
+load 3
+// Not Exist
+assert
+frame_dig -2
+extract 2 0
+len
+intc_3 // 200
+<=
+assert
+txn Sender
+box_get
+store 5
+store 4
+load 5
+assert
+load 4
+frame_bury 2
+frame_dig 2
+frame_dig 2
+intc_0 // 0
+extract_uint16
+frame_dig 2
+pushint 2 // 2
+extract_uint16
+substring3
+frame_bury 3
+frame_dig 3
+frame_bury 7
+frame_dig 7
+frame_bury 6
+pushint 6 // 6
+frame_bury 4
+frame_dig 4
+frame_dig 7
+len
++
+frame_bury 5
+frame_dig 5
+intc_2 // 65536
+<
+assert
+frame_dig 4
+itob
+extract 6 0
+frame_dig -2
+frame_bury 7
+frame_dig 6
+frame_dig 7
+concat
+frame_bury 6
+frame_dig 5
+frame_bury 4
+frame_dig 4
+frame_dig 7
+len
++
+frame_bury 5
+frame_dig 5
+intc_2 // 65536
+<
+assert
+frame_dig 4
+itob
+extract 6 0
+concat
+frame_dig -1
+frame_bury 7
+frame_dig 6
+frame_dig 7
+concat
+frame_bury 6
+frame_dig 5
+frame_bury 4
+frame_dig 4
+itob
+extract 6 0
+concat
+frame_dig 6
 concat
 frame_bury 2
 txn Sender
@@ -502,8 +448,13 @@ proto 0 0
 intc_0 // 0
 dup
 bytec_0 // ""
+dupn 2
 txna ApplicationArgs 1
 frame_bury 2
+txna ApplicationArgs 2
+frame_bury 3
+txna ApplicationArgs 3
+frame_bury 4
 txn GroupIndex
 intc_1 // 1
 -
@@ -515,6 +466,8 @@ intc_1 // pay
 assert
 frame_dig 1
 frame_dig 2
+frame_dig 3
+frame_dig 4
 callsub initprofile_1
 frame_bury 0
 bytec_1 // 0x151f7c75
@@ -530,19 +483,13 @@ retsub
 updateprofilecaster_9:
 proto 0 0
 bytec_0 // ""
-dupn 4
+dupn 2
 txna ApplicationArgs 1
 frame_bury 1
 txna ApplicationArgs 2
 frame_bury 2
-txna ApplicationArgs 3
-frame_bury 3
-txna ApplicationArgs 4
-frame_bury 4
 frame_dig 1
 frame_dig 2
-frame_dig 3
-frame_dig 4
 callsub updateprofile_2
 frame_bury 0
 bytec_1 // 0x151f7c75
